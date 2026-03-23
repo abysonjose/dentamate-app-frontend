@@ -1,0 +1,105 @@
+<div class="plans-wrap">
+
+  <div class="plans-header">
+    <h2 class="section-heading">Subscription Plans</h2>
+    <button class="btn-primary" (click)="openAdd()">+ Add Plan</button>
+  </div>
+
+  <div class="plans-grid">
+    <div *ngFor="let plan of plans" class="plan-card glass-card" [style.border-color]="plan.color + '44'">
+      <div class="plan-top">
+        <div class="plan-badge" [style.background]="plan.color + '22'" [style.color]="plan.color">{{ plan.name }}</div>
+        <div class="plan-clinic-count">{{ plan.clinicCount }} clinics</div>
+      </div>
+      <div class="plan-price">
+        <span class="price-val">₹{{ plan.price }}</span>
+        <span class="price-cycle">/ {{ plan.billingCycle }}</span>
+      </div>
+      <div class="plan-limits">
+        <div class="limit-row"><span>Users</span><span [style.color]="plan.color">{{ plan.users }}</span></div>
+        <div class="limit-row"><span>AI Credits</span><span [style.color]="plan.color">{{ plan.aiCredits.toLocaleString() }}</span></div>
+        <div class="limit-row"><span>Branches</span><span [style.color]="plan.color">{{ plan.branches }}</span></div>
+      </div>
+      <ul class="plan-features">
+        <li *ngFor="let f of plan.features">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" [style.color]="plan.color"><polyline points="20 6 9 17 4 12"/></svg>
+          {{ f }}
+        </li>
+      </ul>
+      <div class="plan-actions">
+        <button class="btn-outline-sm" (click)="openEdit(plan)">Edit</button>
+        <button class="btn-danger-sm" (click)="confirmDelete(plan.id)">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit / Add Modal -->
+  <div *ngIf="showModal" class="modal-overlay" (click)="closeModal()">
+    <div class="modal-box glass-card" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">{{ editPlan.id ? 'Edit Plan' : 'New Plan' }}</h3>
+      <div class="modal-form">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Plan Name</label>
+            <input type="text" [(ngModel)]="editPlan.name" placeholder="e.g. Pro" />
+          </div>
+          <div class="form-field">
+            <label>Color</label>
+            <input type="color" [(ngModel)]="editPlan.color" class="color-input" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Price ($)</label>
+            <input type="number" [(ngModel)]="editPlan.price" min="0" />
+          </div>
+          <div class="form-field">
+            <label>Billing Cycle</label>
+            <select [(ngModel)]="editPlan.billingCycle">
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Max Users</label>
+            <input type="number" [(ngModel)]="editPlan.users" min="1" />
+          </div>
+          <div class="form-field">
+            <label>AI Credits</label>
+            <input type="number" [(ngModel)]="editPlan.aiCredits" min="0" />
+          </div>
+          <div class="form-field">
+            <label>Branches</label>
+            <input type="number" [(ngModel)]="editPlan.branches" min="1" />
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Features</label>
+          <div *ngFor="let f of editPlan.features; let i = index; trackBy: trackByIdx" class="feature-row">
+            <input type="text" [(ngModel)]="editPlan.features[i]" placeholder="Feature description" />
+            <button class="remove-btn" (click)="removeFeature(i)">✕</button>
+          </div>
+          <button class="btn-ghost-sm" (click)="addFeature()">+ Add Feature</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" (click)="save()" [disabled]="saving">{{ saving ? 'Saving…' : 'Save Plan' }}</button>
+        <button class="btn-ghost" (click)="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm -->
+  <div *ngIf="deleteConfirmId" class="modal-overlay" (click)="deleteConfirmId = null">
+    <div class="confirm-box glass-card" (click)="$event.stopPropagation()">
+      <p class="confirm-text">Delete this plan? Clinics on this plan will need to be migrated.</p>
+      <div class="confirm-actions">
+        <button class="btn-danger" (click)="doDelete()">Yes, Delete</button>
+        <button class="btn-ghost" (click)="deleteConfirmId = null">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>

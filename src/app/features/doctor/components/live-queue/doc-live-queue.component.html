@@ -1,0 +1,282 @@
+<div class="queue-page">
+
+  <!-- ══ OP CONTROL BANNER ══ -->
+  <div class="op-banner" [class.op-active]="opActive" [class.op-idle]="!opActive">
+    <div class="op-banner-left">
+      <div class="op-status-dot" [class.active]="opActive"></div>
+      <div>
+        <p class="op-status-label">{{ opActive ? 'OP is Running' : 'OP is Closed' }}</p>
+        <p class="op-status-sub" *ngIf="opActive">
+          Started at {{ opStartTime | date:'h:mm a' }} &nbsp;·&nbsp; Duration: {{ opDuration }}
+        </p>
+        <p class="op-status-sub" *ngIf="!opActive">Start OP to enable RFID card scanning and queue management</p>
+      </div>
+    </div>
+    <div class="op-banner-right">
+      <div class="op-counters" *ngIf="opActive">
+        <span class="op-counter">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+          Token #{{ queue?.currentToken || 0 }}
+        </span>
+        <span class="op-counter waiting">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          {{ waitingCount }} waiting
+        </span>
+      </div>
+      <button *ngIf="!opActive" class="op-start-btn" (click)="startOP()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start OP
+      </button>
+      <button *ngIf="opActive" class="op-stop-btn" (click)="confirmStopOP()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Stop OP
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ RFID SCAN PANEL (only when OP active) ══ -->
+  <div class="rfid-panel" *ngIf="opActive" [@slideIn]>
+    <div class="rfid-panel-header">
+      <div class="rfid-icon-wrap" [class.flash]="scanFlash">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+          <line x1="12" y1="11" x2="12" y2="17"/>
+          <line x1="9" y1="14" x2="15" y2="14"/>
+        </svg>
+      </div>
+      <div>
+        <p class="rfid-title">RFID Card Scanner</p>
+        <p class="rfid-hint">Scan patient card or type Patient ID and press Enter</p>
+      </div>
+      <button class="rfid-sim-btn" (click)="simulateRfid()" title="Simulate RFID scan">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+        Simulate
+      </button>
+    </div>
+    <div class="rfid-input-row">
+      <div class="rfid-input-wrap" [class.flash]="scanFlash">
+        <svg class="rfid-input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
+        </svg>
+        <input #rfidField class="rfid-input" type="text"
+               [(ngModel)]="rfidInput"
+               (keydown)="onRfidKeydown($event)"
+               placeholder="Scan card or enter Patient ID…"
+               autocomplete="off" spellcheck="false" />
+        <button class="rfid-submit-btn" (click)="processRfidScan()" [disabled]="!rfidInput.trim()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="rfid-feedback success" *ngIf="rfidSuccess" [@bannerAnim]>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ rfidSuccess }}
+    </div>
+    <div class="rfid-feedback error" *ngIf="rfidError" [@bannerAnim]>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ rfidError }}
+    </div>
+  </div>
+
+  <!-- ══ OP CLOSED GATE ══ -->
+  <div class="op-gate" *ngIf="!opActive" [@slideIn]>
+    <div class="op-gate-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+      </svg>
+    </div>
+    <p class="op-gate-title">OP Not Started</p>
+    <p class="op-gate-sub">Start the OP session to enable RFID scanning and manage the patient queue.</p>
+    <button class="op-start-btn large" (click)="startOP()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Start OP Session
+    </button>
+  </div>
+
+  <!-- ══ QUEUE (only when OP active) ══ -->
+  <ng-container *ngIf="opActive">
+
+  <!-- ── Stats Row ── -->
+  <div class="stats-row" *ngIf="stats" [@listAnim]="'in'">
+    <div class="stat-card booked">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div>
+        <p class="stat-value">{{ stats.booked }}</p>
+        <p class="stat-label">Booked</p>
+      </div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div>
+        <p class="stat-value">{{ stats.completed }}</p>
+        <p class="stat-label">Completed</p>
+      </div>
+    </div>
+    <div class="stat-card cancelled">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div>
+        <p class="stat-value">{{ stats.cancelled }}</p>
+        <p class="stat-label">Cancelled</p>
+      </div>
+    </div>
+    <div class="stat-card pending">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div>
+        <p class="stat-value">{{ stats.pending }}</p>
+        <p class="stat-label">Pending</p>
+      </div>
+    </div>
+
+    <!-- Leave Request -->
+    <button class="leave-btn" (click)="openLeaveModal()" title="Request Leave">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Leave Request
+    </button>
+  </div>
+
+  <!-- ── Queue Header ── -->
+  <div class="queue-header">
+    <div>
+      <h2 class="queue-title">Live Queue</h2>
+      <p class="queue-sub">{{ waitingCount }} patients waiting · Drag to reprioritize</p>
+    </div>
+    <div class="ws-indicator">
+      <span class="ws-dot"></span> WebSocket Live
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="loading" class="loading-row">
+    <div class="skeleton" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <!-- ── Call Next Button ── -->
+  <div class="call-next-row" *ngIf="opActive">
+    <button class="call-next-btn" (click)="callNextPatient()" [disabled]="callingNext || waitingCount === 0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      {{ callingNext ? 'Calling…' : 'Call Next Patient' }}
+    </button>
+    <span class="waiting-badge" *ngIf="waitingCount > 0">{{ waitingCount }} waiting</span>
+  </div>
+
+  <!-- ── Queue List ── -->
+  <div class="queue-list" *ngIf="!loading && queue" [@listAnim]="queue.tokens.length">
+    <div *ngFor="let entry of queue.tokens; let i = index"
+         class="queue-card"
+         [class.active-card]="entry.status === 'in_progress'"
+         [class.completed-card]="entry.status === 'completed'"
+         [class.pulsing]="pulsingToken === entry.tokenNumber"
+         [class.drag-over]="dragOverIndex === i"
+         draggable="true"
+         (dragstart)="onDragStart(i)"
+         (dragover)="onDragOver($event, i)"
+         (drop)="onDrop(i)"
+         (dragend)="onDragEnd()">
+
+      <!-- Drag handle -->
+      <div class="drag-handle" title="Drag to reprioritize">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="9" cy="5" r="1" fill="currentColor"/><circle cx="15" cy="5" r="1" fill="currentColor"/>
+          <circle cx="9" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="12" r="1" fill="currentColor"/>
+          <circle cx="9" cy="19" r="1" fill="currentColor"/><circle cx="15" cy="19" r="1" fill="currentColor"/>
+        </svg>
+      </div>
+
+      <!-- Token -->
+      <div class="token-badge">
+        <span class="token-num">Token #{{ entry.tokenNumber }}</span>
+        <span class="token-pos">#{{ i + 1 }}</span>
+      </div>
+
+      <!-- Patient info -->
+      <div class="patient-info">
+        <div class="patient-name-row">
+          <span class="patient-name">{{ patientName(entry) }}</span>
+          <span class="patient-meta" *ngIf="entry.isWalkIn">Walk-in</span>
+        </div>
+        <div class="patient-tags">
+          <span class="rfid-tag scanned" *ngIf="entry.status === 'in_progress'">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>
+            In Room
+          </span>
+        </div>
+      </div>
+
+      <!-- Status + Actions -->
+      <div class="card-right">
+        <span class="status-pill" [style.background]="statusColor(entry.status) + '22'" [style.color]="statusColor(entry.status)">
+          {{ statusLabel(entry.status) }}
+        </span>
+        <div class="card-actions" *ngIf="entry.status !== 'completed' && entry.status !== 'cancelled'">
+          <button class="action-btn done-btn" (click)="markDone(entry.tokenNumber)"
+                  *ngIf="entry.status === 'in_progress'">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Done
+          </button>
+          <button class="action-btn skip-btn" (click)="markSkipped(entry.tokenNumber)"
+                  *ngIf="entry.status === 'waiting'">
+            Skip
+          </button>
+        </div>
+      </div>
+    </div>
+    <p *ngIf="queue.tokens.length === 0" class="no-patients">No patients in queue today.</p>
+  </div>
+
+  </ng-container><!-- /opActive queue -->
+
+  <!-- ══ STOP OP CONFIRM MODAL ══ -->
+  <div class="modal-overlay" *ngIf="stopConfirmOpen" (click)="stopConfirmOpen = false">
+    <div class="modal-box" (click)="$event.stopPropagation()" [@slideIn]>
+      <div class="modal-header">
+        <h3>Stop OP Session?</h3>
+        <button class="modal-close" (click)="stopConfirmOpen = false">✕</button>
+      </div>
+      <p class="modal-desc">
+        There {{ waitingCount === 1 ? 'is' : 'are' }} still
+        <strong>{{ waitingCount }}</strong> patient{{ waitingCount === 1 ? '' : 's' }} waiting.
+        Stopping the OP will close the RFID scanner and queue management.
+      </p>
+      <div class="modal-actions">
+        <button class="op-stop-btn" (click)="stopOP()">Stop OP</button>
+        <button class="btn-ghost" (click)="stopConfirmOpen = false">Keep Running</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LEAVE MODAL ══ -->
+  <div class="modal-overlay" *ngIf="leaveModalOpen" (click)="closeLeaveModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()" [@slideIn]>
+      <div class="modal-header">
+        <h3>Leave Request</h3>
+        <button class="modal-close" (click)="closeLeaveModal()">✕</button>
+      </div>
+      <div *ngIf="!leaveSent">
+        <p class="modal-desc">Patients will be notified and rescheduled to the next available day.</p>
+        <div class="form-field">
+          <label for="leaveReason">Reason</label>
+          <textarea id="leaveReason" [(ngModel)]="leaveReason" rows="3" placeholder="e.g. Medical emergency, personal leave..."></textarea>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="submitLeave()" [disabled]="!leaveReason.trim()">Send Notification</button>
+          <button class="btn-ghost" (click)="closeLeaveModal()">Cancel</button>
+        </div>
+      </div>
+      <div *ngIf="leaveSent" class="leave-success">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+        <p>Notifications sent to {{ waitingCount }} patients.</p>
+        <p class="leave-sub">Appointments rescheduled to next available slot.</p>
+      </div>
+    </div>
+  </div>
+
+</div>

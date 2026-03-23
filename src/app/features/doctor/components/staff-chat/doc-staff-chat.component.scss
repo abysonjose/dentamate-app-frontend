@@ -1,0 +1,92 @@
+.chat-page {
+  display: flex; height: calc(100vh - 120px); overflow: hidden;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 16px; box-shadow: var(--shadow-card);
+}
+
+/* ── Contact List ── */
+.contact-list {
+  width: 240px; flex-shrink: 0; border-right: 1px solid var(--border-card);
+  display: flex; flex-direction: column; overflow-y: auto;
+  @media (max-width: 640px) { width: 64px; }
+}
+.contact-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 1rem 0.75rem; border-bottom: 1px solid var(--border-card);
+  h3 { font-size: 0.88rem; font-weight: 700; color: var(--text-1); }
+  @media (max-width: 640px) { h3 { display: none; } }
+}
+.unread-total {
+  background: var(--accent); color: white; font-size: 0.65rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 99px;
+}
+.contact-item {
+  display: flex; align-items: center; gap: 0.65rem; padding: 0.75rem 1rem;
+  cursor: pointer; transition: background 0.12s; position: relative;
+  &:hover { background: var(--accent-dim); }
+  &.active { background: var(--accent-dim); }
+  @media (max-width: 640px) { padding: 0.75rem; justify-content: center; }
+}
+.contact-avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem; font-weight: 700; position: relative;
+  &.sm { width: 32px; height: 32px; font-size: 0.65rem; }
+}
+.online-dot {
+  position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #4ade80; border: 2px solid var(--bg-surface);
+}
+.contact-info { flex: 1; min-width: 0; @media (max-width: 640px) { display: none; } }
+.contact-name { font-size: 0.82rem; font-weight: 600; color: var(--text-1); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.contact-role { font-size: 0.7rem; color: var(--text-3); }
+.contact-badge {
+  background: var(--accent); color: white; font-size: 0.62rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 99px; flex-shrink: 0;
+}
+
+/* ── Chat Area ── */
+.chat-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.chat-header {
+  display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--border-card); flex-shrink: 0;
+}
+.ch-name { font-size: 0.88rem; font-weight: 700; color: var(--text-1); }
+.ch-role { font-size: 0.72rem; color: var(--text-3); margin-top: 1px; }
+
+.msg-list { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; display: flex; flex-direction: column; gap: 0.6rem; }
+.msg-row { display: flex; &.from-me { justify-content: flex-end; } }
+.msg-bubble {
+  max-width: 70%; padding: 0.6rem 0.9rem; border-radius: 14px;
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  &.mine { background: var(--accent-dim); border-color: var(--accent); border-bottom-right-radius: 4px; }
+  &:not(.mine) { border-bottom-left-radius: 4px; }
+}
+.msg-text { font-size: 0.85rem; color: var(--text-1); line-height: 1.45; }
+.msg-time { font-size: 0.65rem; color: var(--text-3); display: block; margin-top: 3px; text-align: right; }
+.no-msgs { flex: 1; display: flex; align-items: center; justify-content: center; color: var(--text-3); font-size: 0.82rem; }
+
+.chat-input-row {
+  display: flex; align-items: flex-end; gap: 0.5rem; padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--border-card); flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; padding: 0.6rem 0.85rem; background: var(--bg-card);
+  border: 1px solid var(--border-card); border-radius: 12px; color: var(--text-1);
+  font-size: 0.85rem; font-family: inherit; outline: none; resize: none; max-height: 100px;
+  &:focus { border-color: var(--accent); }
+  &::placeholder { color: var(--text-3); }
+}
+.send-btn {
+  width: 38px; height: 38px; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8); color: white;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: opacity 0.15s; &:hover { opacity: 0.9; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}
+
+.no-contact {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.75rem; color: var(--text-3); font-size: 0.82rem;
+}

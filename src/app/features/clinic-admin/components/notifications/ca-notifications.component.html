@@ -1,0 +1,18 @@
+<div class="notif-wrap">
+  <div class="notif-toolbar">
+    <p class="notif-count">{{ unreadCount }} unread</p>
+    <button class="btn-ghost-sm" (click)="markAllRead()" *ngIf="unreadCount > 0">Mark all read</button>
+  </div>
+  <div class="notif-list">
+    <div *ngFor="let n of notifications" class="notif-item glass-card" [class.unread]="!n.read" [class.critical]="n.severity === 'critical'" [class.warning]="n.severity === 'warning'" (click)="markRead(n)">
+      <div class="notif-icon">{{ typeIcon(n.type) }}</div>
+      <div class="notif-body">
+        <p class="notif-title">{{ n.title }}</p>
+        <p class="notif-msg">{{ n.message }}</p>
+        <p class="notif-time">{{ n.time }}</p>
+      </div>
+      <div *ngIf="!n.read" class="unread-dot"></div>
+    </div>
+    <p *ngIf="!notifications.length" class="empty-msg">No notifications.</p>
+  </div>
+</div>

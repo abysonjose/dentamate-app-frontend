@@ -1,0 +1,116 @@
+<div class="staff-wrap">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search staff..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()" />
+    </div>
+    <select class="role-filter" [(ngModel)]="filterRole" (ngModelChange)="applyFilter()">
+      <option *ngFor="let r of uniqueRoles" [value]="r">{{ r === 'all' ? 'All Roles' : r }}</option>
+    </select>
+    <button class="btn-primary" (click)="openAdd()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Staff
+    </button>
+  </div>
+
+  <!-- Staff table -->
+  <div class="glass-card table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Staff</th><th>Role</th><th>Branch</th><th>Status</th><th>Online</th><th>Joined</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filtered">
+            <td>
+              <div class="staff-cell">
+                <div class="staff-avatar">{{ initials(s.name) }}</div>
+                <div>
+                  <p class="staff-name">{{ s.name }}</p>
+                  <p class="staff-id">{{ s.id }}</p>
+                </div>
+              </div>
+            </td>
+            <td><span class="role-chip">{{ s.role }}</span></td>
+            <td class="text-muted">{{ s.branch }}</td>
+            <td>
+              <span class="status-chip" [class.active]="s.status === 'active'" [class.suspended]="s.status === 'suspended'">
+                {{ s.status }}
+              </span>
+            </td>
+            <td>
+              <span class="online-dot" [class.on]="s.online" [attr.title]="s.online ? 'Online' : (s.lastSeen || 'Offline')"></span>
+              <span class="text-muted" style="font-size:0.72rem; margin-left:6px">{{ s.online ? 'Online' : (s.lastSeen || 'Offline') }}</span>
+            </td>
+            <td class="text-muted">{{ s.joinDate }}</td>
+            <td>
+              <button class="action-btn" [class.suspend]="s.status === 'active'" [class.activate]="s.status === 'suspended'" (click)="toggleStatus(s)">
+                {{ s.status === 'active' ? 'Suspend' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!filtered.length">
+            <td colspan="7" class="empty-row">No staff found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Add Staff Modal -->
+  <div *ngIf="showAddModal" class="modal-overlay" (click)="closeAdd()">
+    <div class="modal-box glass-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Add New Staff</h3>
+        <button class="modal-close" (click)="closeAdd()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-field">
+          <label>Full Name</label>
+          <input type="text" [(ngModel)]="newStaff.name" placeholder="Full name" />
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Role</label>
+            <select [(ngModel)]="newStaff.role" (ngModelChange)="onRoleChange()">
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Branch</label>
+            <select [(ngModel)]="newStaff.branch">
+              <option *ngFor="let b of branches" [value]="b">{{ b }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field" *ngIf="isDoctor">
+          <label>Department</label>
+          <select [(ngModel)]="newStaff.department">
+            <option *ngFor="let d of departments" [value]="d">{{ d }}</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="newStaff.email" placeholder="[email protected]" />
+        </div>
+        <div class="form-field">
+          <label>Phone</label>
+          <input type="tel" [(ngModel)]="newStaff.phone" placeholder="+1 512-555-0000" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" (click)="closeAdd()">Cancel</button>
+        <button class="btn-primary" (click)="saveStaff()" [disabled]="loading">
+          {{ loading ? 'Saving...' : 'Add Staff' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

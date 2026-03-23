@@ -1,0 +1,43 @@
+<div class="logs-wrap">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search user..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()" />
+    </div>
+    <select class="role-filter" [(ngModel)]="filterAction" (ngModelChange)="applyFilter()">
+      <option value="all">All Actions</option>
+      <option value="login">Login</option>
+      <option value="logout">Logout</option>
+      <option value="sign-in">Sign-in</option>
+    </select>
+  </div>
+
+  <div class="glass-card table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>User</th><th>Role</th><th>Action</th><th>Timestamp</th><th>IP Address</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of filtered">
+            <td>
+              <p class="staff-name">{{ l.userName }}</p>
+              <p class="staff-id">{{ l.userId }}</p>
+            </td>
+            <td><span class="role-chip">{{ l.role }}</span></td>
+            <td>
+              <span class="action-chip" [class.green]="actionColor(l.action) === 'green'" [class.red]="actionColor(l.action) === 'red'">
+                {{ l.action }}
+              </span>
+            </td>
+            <td class="text-muted mono">{{ l.timestamp }}</td>
+            <td class="text-muted mono">{{ l.ip }}</td>
+          </tr>
+          <tr *ngIf="!filtered.length">
+            <td colspan="5" class="empty-row">No logs found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

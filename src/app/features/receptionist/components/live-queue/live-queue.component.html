@@ -1,0 +1,135 @@
+<div class="queue-layout">
+
+  <!-- ── Summary Row ── -->
+  <div class="summary-row" *ngIf="summary">
+    <div class="summary-card booked">
+      <span class="sum-icon">📅</span>
+      <div><p class="sum-val">{{ summary.booked }}</p><p class="sum-lbl">Booked</p></div>
+    </div>
+    <div class="summary-card completed">
+      <span class="sum-icon">✅</span>
+      <div><p class="sum-val">{{ summary.completed }}</p><p class="sum-lbl">Completed</p></div>
+    </div>
+    <div class="summary-card cancelled">
+      <span class="sum-icon">❌</span>
+      <div><p class="sum-val">{{ summary.cancelled }}</p><p class="sum-lbl">Cancelled</p></div>
+    </div>
+    <div class="summary-card total">
+      <span class="sum-icon">🏥</span>
+      <div><p class="sum-val">{{ summary.total }}</p><p class="sum-lbl">Total Patients</p></div>
+    </div>
+  </div>
+
+  <!-- ── Live Queue Header ── -->
+  <div class="section-title">
+    <span class="live-dot"></span> Live Token Queue
+    <span class="ws-badge">🔴 Live</span>
+    <button class="add-btn" (click)="openAddForm()">+ Add Patient</button>
+  </div>
+
+  <!-- ── Current Token Banner ── -->
+  <div class="current-token-banner" *ngIf="inProgressToken">
+    <span class="ct-label">Now Serving</span>
+    <span class="ct-number">Token #{{ inProgressToken.tokenNumber }}</span>
+    <span class="ct-name">{{ patientName(inProgressToken) }}</span>
+    <span class="ct-status in-progress">In Consultation</span>
+  </div>
+  <div class="current-token-banner idle" *ngIf="!inProgressToken && !loading">
+    <span class="ct-label">No patient currently in consultation</span>
+    <span class="ct-waiting">{{ totalWaiting }} waiting</span>
+  </div>
+
+  <!-- ── Add Patient Form ── -->
+  <div class="add-form glass-card" *ngIf="showAddForm" [@pulseAnim]>
+    <h4>Add Patient to Queue</h4>
+    <div class="form-row">
+      <input type="text" placeholder="Patient Name *" [(ngModel)]="addForm.patientName" />
+      <input type="text" placeholder="Patient ID (optional)" [(ngModel)]="addForm.patientId" />
+    </div>
+    <div class="form-row">
+      <input type="text" placeholder="Doctor ID (optional)" [(ngModel)]="addForm.doctorId" />
+      <label class="walkin-toggle">
+        <input type="checkbox" [(ngModel)]="addForm.isWalkIn" />
+        Walk-in
+      </label>
+    </div>
+    <p class="form-error" *ngIf="addError">{{ addError }}</p>
+    <div class="form-actions">
+      <button class="btn-primary" (click)="submitAddToQueue()" [disabled]="addLoading">
+        {{ addLoading ? 'Adding…' : 'Add to Queue' }}
+      </button>
+      <button class="btn-ghost" (click)="showAddForm = false">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div *ngIf="loading" class="loading-row">
+    <div class="skeleton" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <!-- ── Token List ── -->
+  <div class="queue-grid" *ngIf="!loading && queue" [@cardAnim]="queue.tokens.length">
+    <div *ngFor="let entry of queue.tokens"
+         class="queue-card glass-card"
+         [class.in-progress-card]="entry.status === 'in_progress'"
+         [class.arrived-card]="entry.status === 'arrived'"
+         [class.completed-card]="entry.status === 'completed'"
+         [class.pulse-highlight]="pulsingToken === entry.tokenNumber"
+         [@pulseAnim]>
+      <div class="token-badge">#{{ entry.tokenNumber }}</div>
+      <div class="entry-info">
+        <p class="entry-name">{{ patientName(entry) }}</p>
+        <p class="entry-meta">
+          <span *ngIf="entry.isWalkIn" class="walkin-tag">Walk-in</span>
+          <span *ngIf="entry.appointmentId" class="appt-tag">Appt #{{ entry.appointmentId }}</span>
+        </p>
+      </div>
+      <span class="status-pill"
+            [style.background]="statusColor(entry.status) + '22'"
+            [style.color]="statusColor(entry.status)">
+        <span *ngIf="entry.status === 'arrived'" class="rfid-icon">📡</span>
+        {{ entry.status === 'arrived' ? 'Arrived' : (entry.status | titlecase) }}
+      </span>
+      <button class="cancel-btn" *ngIf="entry.status === 'waiting'"
+              (click)="cancelToken(entry.tokenNumber)" title="Cancel token">✕</button>
+    </div>
+    <p *ngIf="queue.tokens.length === 0" class="no-patients">No patients in queue today.</p>
+  </div>
+
+  <!-- ── No queue yet ── -->
+  <div *ngIf="!loading && !queue" class="no-queue-msg glass-card">
+    <p>No queue started today. Add the first patient to begin.</p>
+    <button class="btn-primary" (click)="openAddForm()">+ Add First Patient</button>
+  </div>
+
+  <!-- ── Doctor Status Cards ── -->
+  <div class="section-title mt-6">👨‍⚕️ Doctor Availability</div>
+  <div class="doctor-grid" [@cardAnim]="doctors.length">
+    <div *ngFor="let doc of doctors" class="doc-card glass-card">
+      <div class="doc-avatar">{{ doc.avatar }}</div>
+      <div class="doc-info">
+        <p class="doc-name">{{ doc.name }}</p>
+        <p class="doc-spec">{{ doc.specialty }} · {{ doc.room }}</p>
+      </div>
+      <div class="doc-status-dot" [style.background]="doctorStatusColor(doc.status)" [title]="doc.status"></div>
+    </div>
+  </div>
+
+  <!-- ── Leave Management ── -->
+  <div class="section-title mt-6">🏖️ On Leave Today</div>
+  <div class="leave-list glass-card">
+    <div *ngFor="let doc of leaveDoctors" class="leave-row">
+      <div class="leave-avatar">{{ doc.avatar }}</div>
+      <div class="leave-info">
+        <p class="leave-name">{{ doc.name }}</p>
+        <p class="leave-spec">{{ doc.specialty }}</p>
+      </div>
+      <div class="leave-dates">
+        <span class="leave-badge">{{ doc.reason }}</span>
+        <span class="leave-range">{{ doc.leaveFrom }} → {{ doc.leaveTo }}</span>
+      </div>
+    </div>
+    <p *ngIf="leaveDoctors.length === 0" class="no-patients">All doctors are present today.</p>
+  </div>
+
+</div>

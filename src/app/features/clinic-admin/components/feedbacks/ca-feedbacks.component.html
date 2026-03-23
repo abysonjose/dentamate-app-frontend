@@ -1,0 +1,39 @@
+<div class="fb-wrap">
+  <div *ngFor="let f of feedbacks" class="fb-card glass-card">
+    <div class="fb-header">
+      <div class="fb-patient">
+        <div class="fb-avatar">{{ f.patientName[0] }}</div>
+        <div>
+          <p class="fb-name">{{ f.patientName }}</p>
+          <p class="fb-meta">{{ f.patientId }} · {{ f.date }} · {{ f.doctorName }}</p>
+        </div>
+      </div>
+      <div class="fb-overall">
+        <span class="overall-score">{{ avgScore(f) }}</span>
+        <span class="overall-label">/ 5</span>
+      </div>
+    </div>
+    <div class="fb-scores">
+      <div class="score-row">
+        <span class="score-label">Treatment</span>
+        <div class="stars">
+          <span *ngFor="let s of stars(f.treatmentScore)" class="star" [class.filled]="s <= f.treatmentScore">★</span>
+        </div>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Doctor</span>
+        <div class="stars">
+          <span *ngFor="let s of stars(f.doctorScore)" class="star" [class.filled]="s <= f.doctorScore">★</span>
+        </div>
+      </div>
+      <div class="score-row">
+        <span class="score-label">Facility</span>
+        <div class="stars">
+          <span *ngFor="let s of stars(f.facilityScore)" class="star" [class.filled]="s <= f.facilityScore">★</span>
+        </div>
+      </div>
+    </div>
+    <p *ngIf="f.comment" class="fb-comment">"{{ f.comment }}"</p>
+  </div>
+  <p *ngIf="!feedbacks.length" class="empty-msg">No feedbacks yet.</p>
+</div>

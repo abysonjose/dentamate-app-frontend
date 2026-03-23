@@ -1,0 +1,53 @@
+<div class="patients-wrap">
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search patients..." [(ngModel)]="searchQuery" (ngModelChange)="applyFilter()" />
+    </div>
+    <select class="role-filter" [(ngModel)]="filterStatus" (ngModelChange)="applyFilter()">
+      <option value="all">All Status</option>
+      <option value="active">Active</option>
+      <option value="suspended">Suspended</option>
+    </select>
+  </div>
+
+  <div class="glass-card table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Patient</th><th>Age / Gender</th><th>Phone</th><th>Last Visit</th><th>Visits</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filtered">
+            <td>
+              <div class="staff-cell">
+                <div class="staff-avatar">{{ initials(p.name) }}</div>
+                <div>
+                  <p class="staff-name">{{ p.name }}</p>
+                  <p class="staff-id">{{ p.id }}</p>
+                </div>
+              </div>
+            </td>
+            <td class="text-muted">{{ age(p.dob) }}y / {{ p.gender === 'M' ? 'Male' : 'Female' }}</td>
+            <td class="text-muted">{{ p.phone }}</td>
+            <td class="text-muted">{{ p.lastVisit }}</td>
+            <td><span class="visits-badge">{{ p.totalVisits }}</span></td>
+            <td>
+              <span class="status-chip" [class.active]="p.status === 'active'" [class.suspended]="p.status === 'suspended'">
+                {{ p.status }}
+              </span>
+            </td>
+            <td>
+              <button class="action-btn" [class.suspend]="p.status === 'active'" [class.activate]="p.status === 'suspended'" (click)="toggleStatus(p)">
+                {{ p.status === 'active' ? 'Suspend' : 'Activate' }}
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!filtered.length">
+            <td colspan="7" class="empty-row">No patients found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

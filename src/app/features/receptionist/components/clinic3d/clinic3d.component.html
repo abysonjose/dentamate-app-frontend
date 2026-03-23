@@ -1,0 +1,50 @@
+<div class="clinic3d-layout">
+
+  <div class="canvas-wrap glass-card">
+    <div class="canvas-header">
+      <h3 class="card-title">🏥 Clinic Status — 3D Floor Plan</h3>
+      <div class="pulse-indicator" [class.active]="isPulsing">
+        <span class="pulse-dot"></span>
+        {{ isPulsing ? 'Token Flow Active' : 'Live View' }}
+      </div>
+    </div>
+    <canvas #canvas3d class="three-canvas"></canvas>
+    <div class="canvas-hint">Camera auto-orbits · Token flow pulses on new check-in</div>
+  </div>
+
+  <!-- Room Status Legend -->
+  <div class="glass-card legend-card">
+    <h3 class="card-title">Room Status</h3>
+    <div class="legend-list">
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#4ade80"></span>
+        <span class="leg-label">Available</span>
+      </div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#f59e0b"></span>
+        <span class="leg-label">Busy</span>
+      </div>
+      <div class="legend-item">
+        <span class="leg-dot" style="background:#f87171"></span>
+        <span class="leg-label">On Break</span>
+      </div>
+    </div>
+
+    <div class="room-cards">
+      <div *ngFor="let doc of doctors" class="room-card">
+        <div class="room-dot" [style.background]="doc.status === 'available' ? '#4ade80' : doc.status === 'busy' ? '#f59e0b' : '#f87171'"></div>
+        <div class="room-info">
+          <p class="room-name">{{ doc.room }}</p>
+          <p class="room-doc">{{ doc.name }}</p>
+        </div>
+        <div class="room-token">
+          <span class="rt-label">Token</span>
+          <span class="rt-num">{{ doc.currentToken }}</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="trigger-btn" (click)="triggerTokenFlow()">⚡ Trigger Token Flow</button>
+  </div>
+
+</div>

@@ -1,0 +1,90 @@
+.inv-wrap { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.refill-banner {
+  display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem;
+  border-left: 3px solid #f59e0b;
+  .banner-icon { color: #f59e0b; flex-shrink: 0; margin-top: 2px; }
+  .banner-title { font-size: 0.85rem; font-weight: 600; color: var(--text-1); margin-bottom: 0.5rem; }
+}
+.refill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.refill-tag {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 99px; cursor: pointer;
+  background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3);
+  &:hover { background: rgba(245,158,11,0.25); }
+}
+
+.toolbar { display: flex; gap: 0.75rem; }
+.search-box {
+  display: flex; align-items: center; gap: 0.5rem; flex: 1; max-width: 360px;
+  background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px; padding: 0.5rem 0.85rem;
+  svg { color: var(--text-3); flex-shrink: 0; }
+  input { background: none; border: none; outline: none; color: var(--text-1); font-size: 0.875rem; width: 100%; font-family: inherit;
+    &::placeholder { color: var(--text-3); }
+  }
+}
+
+.inv-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+
+.inv-card {
+  padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: 0.75rem;
+  &.refill-req { border-color: rgba(245,158,11,0.4); }
+}
+.inv-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
+.inv-name { font-size: 0.9rem; font-weight: 600; color: var(--text-1); }
+.inv-meta { font-size: 0.72rem; color: var(--text-3); margin-top: 2px; }
+
+.stock-badge {
+  font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+  &.ok       { background: rgba(20,184,166,0.15); color: #14b8a6; }
+  &.low      { background: rgba(245,158,11,0.15); color: #f59e0b; }
+  &.critical { background: rgba(244,63,94,0.15);  color: #f43f5e; }
+}
+
+.stock-bar-wrap { height: 6px; background: var(--bg-card); border-radius: 99px; overflow: hidden; }
+.stock-bar {
+  height: 100%; border-radius: 99px; transition: width 0.5s;
+  &.ok       { background: #14b8a6; }
+  &.low      { background: #f59e0b; }
+  &.critical { background: #f43f5e; }
+}
+
+.inv-footer { display: flex; align-items: center; justify-content: space-between; }
+.inv-price { font-size: 0.78rem; color: var(--text-3); }
+.refill-flag { font-size: 0.7rem; color: #f59e0b; }
+
+.btn-refill {
+  font-size: 0.75rem; font-weight: 600; padding: 4px 12px; border-radius: 8px; border: none; cursor: pointer;
+  background: var(--accent-dim); color: var(--accent); font-family: inherit;
+  &:hover { background: var(--accent); color: white; }
+}
+
+// Modal (shared)
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center; z-index: 200; padding: 1rem;
+}
+.modal-box { width: 100%; max-width: 400px; padding: 1.5rem; border-radius: 18px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;
+  h3 { font-size: 1rem; font-weight: 700; color: var(--text-1); }
+}
+.modal-close { background: none; border: none; color: var(--text-3); cursor: pointer; padding: 4px; border-radius: 6px;
+  &:hover { color: var(--text-1); background: var(--bg-card); }
+}
+.modal-body { display: flex; flex-direction: column; gap: 0.85rem; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; }
+.form-field {
+  display: flex; flex-direction: column; gap: 0.3rem;
+  label { font-size: 0.78rem; font-weight: 500; color: var(--text-2); }
+  input { padding: 0.55rem 0.85rem; background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 10px; color: var(--text-1); font-size: 0.875rem; font-family: inherit; outline: none;
+    &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  }
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8); color: white; font-size: 0.82rem; font-weight: 600; font-family: inherit;
+  &:hover { opacity: 0.9; } &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-card); background: transparent; color: var(--text-2); font-size: 0.82rem; cursor: pointer; font-family: inherit;
+  &:hover { background: var(--accent-dim); color: var(--accent); }
+}

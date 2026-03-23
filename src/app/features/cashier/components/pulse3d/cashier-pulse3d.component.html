@@ -1,0 +1,43 @@
+<div class="pulse-wrap">
+  <div class="pulse-header">
+    <p class="pulse-title">Financial Pulse — 3D View</p>
+    <p class="pulse-sub">Live 3D visualization of clinic financial health. Mark a bill as paid to trigger the celebration animation.</p>
+  </div>
+
+  <div class="canvas-container">
+    <canvas #canvas3d class="three-canvas"></canvas>
+
+    <!-- Overlay stats -->
+    <div class="overlay-stats">
+      <div class="stat-chip green">
+        <span class="stat-icon">💰</span>
+        <div>
+          <p class="stat-label">Received</p>
+          <p class="stat-val">{{ stats.paid | currency:'INR':'symbol':'1.0-0' }}</p>
+        </div>
+      </div>
+      <div class="stat-chip amber">
+        <span class="stat-icon">⏳</span>
+        <div>
+          <p class="stat-label">Pending</p>
+          <p class="stat-val">{{ stats.pending | currency:'INR':'symbol':'1.0-0' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment celebration toast -->
+    <div *ngIf="recentPayment" class="celebrate-toast">
+      <span class="celebrate-icon">🎉</span>
+      <div>
+        <p class="celebrate-title">Payment Confirmed!</p>
+        <p class="celebrate-sub">{{ recentPayment }} · Pharmacist notified</p>
+      </div>
+    </div>
+
+    <!-- Labels -->
+    <div class="label-coin">🪙 Coin</div>
+    <div class="label-vault">🏦 Vault</div>
+  </div>
+
+  <p class="pulse-hint">Move your mouse over the canvas to interact with the 3D scene</p>
+</div>

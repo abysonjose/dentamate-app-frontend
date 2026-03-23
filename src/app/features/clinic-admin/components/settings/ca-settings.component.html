@@ -1,0 +1,99 @@
+<div class="settings-wrap">
+
+  <!-- Theme -->
+  <div class="glass-card settings-card">
+    <p class="settings-title">Appearance</p>
+    <div class="setting-row">
+      <div>
+        <p class="setting-label">Dark / Light Mode</p>
+        <p class="setting-desc">Toggle the overall theme of the application</p>
+      </div>
+      <button class="toggle-btn" (click)="themeService.toggle()">
+        <span *ngIf="themeService.current === 'dark'">🌙 Dark</span>
+        <span *ngIf="themeService.current === 'light'">☀️ Light</span>
+      </button>
+    </div>
+    <div class="setting-row">
+      <div>
+        <p class="setting-label">Accent Color</p>
+        <p class="setting-desc">Changes the primary color across the entire clinic software</p>
+      </div>
+      <div class="accent-swatches">
+        <button *ngFor="let a of accents" class="swatch" [style.background]="a.color" [class.selected]="selectedAccent === a.name" (click)="setAccent(a.name)" [attr.aria-label]="a.name + ' accent'"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sound & Notifications -->
+  <div class="glass-card settings-card">
+    <p class="settings-title">Sound & Notifications</p>
+    <div class="setting-row">
+      <div>
+        <p class="setting-label">Sound Effects</p>
+        <p class="setting-desc">Play sounds on clicks and alerts</p>
+      </div>
+      <label class="switch" [attr.aria-label]="'Toggle sound'">
+        <input type="checkbox" [(ngModel)]="soundEnabled" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <div>
+        <p class="setting-label">Push Notifications</p>
+        <p class="setting-desc">Receive in-app notifications</p>
+      </div>
+      <label class="switch" [attr.aria-label]="'Toggle notifications'">
+        <input type="checkbox" [(ngModel)]="notifEnabled" />
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- Change Password -->
+  <div class="glass-card settings-card">
+    <p class="settings-title">Change Password</p>
+
+    <ng-container *ngIf="pwStep === 'idle'">
+      <p class="setting-desc" style="margin-bottom:1rem">An OTP will be sent to your registered email address.</p>
+      <button class="btn-primary" (click)="sendOtp()">Send OTP to Email</button>
+    </ng-container>
+
+    <ng-container *ngIf="pwStep === 'otp-sent'">
+      <p class="setting-desc" style="margin-bottom:1rem">OTP sent to your email. Enter it below. <em>(Demo OTP: 123456)</em></p>
+      <div class="form-field">
+        <label>Enter OTP</label>
+        <input type="text" [(ngModel)]="otpInput" placeholder="6-digit OTP" maxlength="6" />
+      </div>
+      <p *ngIf="pwError" class="pw-error">{{ pwError }}</p>
+      <div class="pw-actions">
+        <button class="btn-primary" (click)="verifyOtp()">Verify OTP</button>
+        <button class="btn-ghost" (click)="resetPw()">Cancel</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="pwStep === 'verify'">
+      <div class="form-field">
+        <label>New Password</label>
+        <input type="password" [(ngModel)]="newPassword" placeholder="Min 6 characters" />
+      </div>
+      <div class="form-field">
+        <label>Confirm Password</label>
+        <input type="password" [(ngModel)]="confirmPassword" placeholder="Repeat password" />
+      </div>
+      <p *ngIf="pwError" class="pw-error">{{ pwError }}</p>
+      <div class="pw-actions">
+        <button class="btn-primary" (click)="savePassword()">Save Password</button>
+        <button class="btn-ghost" (click)="resetPw()">Cancel</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="pwStep === 'done'">
+      <div class="pw-success">
+        <span>✅</span>
+        <p>Password changed successfully!</p>
+        <button class="btn-ghost" (click)="resetPw()">Done</button>
+      </div>
+    </ng-container>
+  </div>
+
+</div>

@@ -1,0 +1,6 @@
+@import '../staff/ca-staff.component.scss';
+.visits-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--accent-dim); color: var(--accent); font-size: 0.78rem; font-weight: 700;
+}

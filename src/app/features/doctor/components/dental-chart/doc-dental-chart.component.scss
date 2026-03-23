@@ -1,0 +1,107 @@
+.chart-page { height: 100%; }
+
+.glass-card {
+  background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 16px; box-shadow: var(--shadow-card);
+}
+
+.chart-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 1.25rem;
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+/* ── Canvas ── */
+.canvas-wrap { position: relative; padding: 1.25rem; overflow: hidden; }
+.canvas-header { margin-bottom: 0.75rem; }
+.canvas-title { font-size: 1rem; font-weight: 700; color: var(--text-1); }
+.canvas-sub   { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+
+.dental-canvas {
+  width: 100%; height: 340px; display: block; border-radius: 12px;
+  background: radial-gradient(ellipse at center, rgba(13,148,136,0.06) 0%, transparent 70%);
+  cursor: crosshair;
+}
+
+.tooth-tooltip {
+  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--bg-surface); border: 1px solid var(--border-card);
+  border-radius: 10px; padding: 0.5rem 0.85rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3); pointer-events: none;
+  .tt-num  { font-size: 0.9rem; font-weight: 700; color: var(--accent); font-family: 'Courier New', monospace; }
+  .tt-name { font-size: 0.82rem; color: var(--text-1); }
+  .tt-cond { font-size: 0.75rem; font-weight: 600; }
+}
+
+.chart-legend {
+  display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.75rem;
+  .legend-item { display: flex; align-items: center; gap: 0.35rem; font-size: 0.72rem; color: var(--text-2); }
+  .legend-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+}
+
+/* ── Side Panel ── */
+.chart-side { display: flex; flex-direction: column; gap: 1rem; }
+
+.tooth-editor { padding: 1.1rem; }
+.te-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.te-num {
+  width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+  background: var(--accent-dim); color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.88rem; font-weight: 700; font-family: 'Courier New', monospace;
+}
+.te-name { font-size: 0.88rem; font-weight: 600; color: var(--text-1); flex: 1; }
+.te-cond { font-size: 0.72rem; font-weight: 600; margin-top: 1px; }
+.te-close { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 0.9rem; &:hover { color: var(--text-1); } }
+.te-body { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.form-field {
+  label { display: block; font-size: 0.78rem; font-weight: 500; color: var(--text-2); margin-bottom: 0.3rem; }
+  textarea, select {
+    width: 100%; padding: 0.5rem 0.75rem; background: var(--bg-card);
+    border: 1px solid var(--border-card); border-radius: 9px; color: var(--text-1);
+    font-size: 0.82rem; font-family: inherit; outline: none; resize: vertical;
+    &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+  }
+  select { resize: none; }
+}
+.te-select { appearance: none; cursor: pointer; }
+
+.no-selection {
+  padding: 2rem 1rem; display: flex; flex-direction: column; align-items: center; gap: 0.75rem;
+  text-align: center; color: var(--text-3); font-size: 0.82rem;
+}
+
+.selected-summary { padding: 1rem; }
+.ss-title { font-size: 0.82rem; font-weight: 700; color: var(--text-1); margin-bottom: 0.6rem; }
+.ss-list { display: flex; flex-direction: column; gap: 0.35rem; max-height: 140px; overflow-y: auto; }
+.ss-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; }
+.ss-num  { font-family: 'Courier New', monospace; color: var(--accent); font-weight: 700; width: 28px; }
+.ss-name { flex: 1; color: var(--text-1); }
+.ss-cond { font-size: 0.7rem; font-weight: 600; }
+.mt-2 { margin-top: 0.5rem; }
+
+/* ── Tooth Grid ── */
+.tooth-grid-card { padding: 1rem; }
+.tg-title { font-size: 0.78rem; font-weight: 600; color: var(--text-2); margin-bottom: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.tooth-grid {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px;
+}
+.tg-tooth {
+  aspect-ratio: 1; border-radius: 6px; border: 1px solid transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: transform 0.12s, border-color 0.12s;
+  &:hover { transform: scale(1.1); }
+  &.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px var(--accent-dim); }
+}
+.tg-num { font-size: 0.55rem; font-weight: 700; color: var(--text-2); }
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.5rem 1rem; border-radius: 8px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8);
+  color: white; font-size: 0.82rem; font-weight: 600; font-family: inherit;
+  transition: opacity 0.2s; &:hover { opacity: 0.9; }
+}

@@ -1,0 +1,126 @@
+.queue-layout { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.summary-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+  @media (max-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.summary-card {
+  display: flex; align-items: center; gap: 0.85rem; padding: 1rem 1.25rem;
+  background: var(--bg-card); border: 1px solid var(--border-card); border-radius: 14px;
+  backdrop-filter: blur(12px);
+  .sum-icon { font-size: 1.6rem; }
+  .sum-val  { font-size: 1.5rem; font-weight: 800; color: var(--text-1); line-height: 1; }
+  .sum-lbl  { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+  &.booked    { border-color: rgba(96,165,250,0.3); }
+  &.completed { border-color: rgba(74,222,128,0.3); }
+  &.cancelled { border-color: rgba(248,113,113,0.3); }
+  &.total     { border-color: rgba(20,184,166,0.3); }
+}
+
+.section-title {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-size: 0.9rem; font-weight: 700; color: var(--text-1);
+}
+
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #4ade80;
+  box-shadow: 0 0 6px #4ade80; animation: livePulse 1.5s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(1.4); }
+}
+
+.rfid-sim-btn {
+  margin-left: auto; padding: 0.3rem 0.75rem; border-radius: 8px; border: 1px solid var(--accent);
+  background: var(--accent-dim); color: var(--accent); font-size: 0.75rem; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: background 0.15s;
+  &:hover { background: var(--accent); color: white; }
+}
+
+.queue-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;
+}
+
+.queue-card { padding: 1.25rem; }
+
+.qc-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+.doc-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.78rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.doc-info { flex: 1;
+  .doc-name { font-size: 0.88rem; font-weight: 600; color: var(--text-1); }
+  .doc-spec { font-size: 0.72rem; color: var(--text-3); margin-top: 1px; }
+}
+.doc-status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+.token-display {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.75rem 1rem; background: var(--accent-dim); border-radius: 10px; margin-bottom: 1rem;
+}
+.token-now { display: flex; flex-direction: column; gap: 2px;
+  .tn-label  { font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; }
+  .tn-number { font-size: 1.4rem; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+}
+.token-wait { text-align: right;
+  .tw-count { font-size: 1.6rem; font-weight: 800; color: var(--text-1); display: block; }
+  .tw-label { font-size: 0.7rem; color: var(--text-3); }
+}
+
+.patient-list { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.patient-row {
+  display: flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.6rem;
+  border-radius: 8px; background: var(--bg-card); border: 1px solid var(--border-card);
+  transition: border-color 0.2s, background 0.2s;
+  &.active-patient { border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.06); }
+  &.pulse-highlight {
+    border-color: var(--accent); background: var(--accent-dim);
+    animation: rowPulse 1.5s ease-in-out 2;
+  }
+}
+@keyframes rowPulse {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 12px var(--accent); }
+}
+
+.p-token  { font-size: 0.72rem; font-weight: 700; color: var(--accent); font-family: monospace; min-width: 52px; }
+.p-name   { font-size: 0.78rem; color: var(--text-1); flex: 1; }
+.p-rfid   { font-size: 0.75rem; }
+.p-status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.p-status-text { font-size: 0.7rem; font-weight: 600; min-width: 52px; }
+.p-wait   { font-size: 0.68rem; color: var(--text-3); }
+.rfid-btn {
+  font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--accent);
+  background: transparent; color: var(--accent); cursor: pointer; font-family: inherit;
+  &:hover { background: var(--accent); color: white; }
+}
+
+.no-patients { font-size: 0.78rem; color: var(--text-3); text-align: center; padding: 0.5rem 0; }
+
+.leave-list { padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; }
+.leave-row {
+  display: flex; align-items: center; gap: 0.85rem; padding: 0.65rem 0.75rem;
+  background: var(--bg-card); border: 1px solid rgba(248,113,113,0.2); border-radius: 10px;
+}
+.leave-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #f87171, #f59e0b);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; color: white; flex-shrink: 0;
+}
+.leave-info { flex: 1;
+  .leave-name { font-size: 0.85rem; font-weight: 600; color: var(--text-1); }
+  .leave-spec { font-size: 0.72rem; color: var(--text-3); }
+}
+.leave-dates { text-align: right;
+  .leave-badge {
+    display: block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 99px;
+    background: rgba(248,113,113,0.15); color: #f87171; margin-bottom: 2px;
+  }
+  .leave-range { font-size: 0.68rem; color: var(--text-3); }
+}

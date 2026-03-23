@@ -1,0 +1,34 @@
+<div class="reports-wrap">
+
+  <div class="reports-header">
+    <h2 class="section-heading">Reports Hub</h2>
+    <button class="btn-primary">+ Generate Report</button>
+  </div>
+
+  <div class="filter-tabs">
+    <button *ngFor="let t of types" class="filter-tab" [class.active]="activeType === t" (click)="setType(t)">
+      {{ typeLabels[t] }}
+    </button>
+  </div>
+
+  <div class="reports-grid">
+    <div *ngFor="let r of filtered" class="report-card glass-card" [style.border-left-color]="getTypeColor(r.type)">
+      <div class="report-top">
+        <div class="report-type-badge" [style.background]="getTypeColor(r.type) + '22'" [style.color]="getTypeColor(r.type)">
+          {{ typeLabels[r.type] }}
+        </div>
+        <span class="report-size">{{ r.size }}</span>
+      </div>
+      <p class="report-name">{{ r.name }}</p>
+      <div class="report-meta">
+        <span>Period: {{ r.period }}</span>
+        <span>Generated: {{ r.generated }}</span>
+      </div>
+      <div class="report-actions">
+        <button class="btn-outline-sm">📥 Download</button>
+        <button class="btn-outline-sm">👁 Preview</button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,174 @@
+<div class="login-page" [@pageEnter]>
+
+  <!-- ── Three.js canvas (full background) ── -->
+  <div class="canvas-wrapper">
+    <canvas #threeCanvas></canvas>
+    <!-- Gradient overlay to blend canvas into form side -->
+    <div class="canvas-overlay"></div>
+  </div>
+
+  <!-- ── Left panel branding ── -->
+  <aside class="brand-panel anim-item">
+    <div class="brand-logo">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="20" fill="url(#logoGrad)"/>
+        <path d="M13 14c0-3.866 3.134-7 7-7s7 3.134 7 7c0 2.5-1.3 4.7-3.25 6L20 28l-3.75-8C14.3 18.7 13 16.5 13 14z"
+              fill="white" opacity="0.9"/>
+        <defs>
+          <linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#0d9488"/>
+            <stop offset="1" stop-color="#1d4ed8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="brand-name">DentaMate</span>
+    </div>
+
+    <div class="brand-tagline">
+      <h1>Smarter dental<br>practice management.</h1>
+      <p>Streamline appointments, patient records, and billing — all in one place.</p>
+    </div>
+
+    <div class="brand-stats">
+      <div class="stat">
+        <span class="stat-value">12k+</span>
+        <span class="stat-label">Clinics</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">98%</span>
+        <span class="stat-label">Uptime</span>
+      </div>
+      <div class="stat">
+        <span class="stat-value">4.9★</span>
+        <span class="stat-label">Rating</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── Right panel: login card ── -->
+  <main class="form-panel">
+    <div class="glass-card">
+
+      <!-- Card header -->
+      <div class="card-header anim-item">
+        <h2>Welcome back</h2>
+        <p>Sign in to your DentaMate account</p>
+      </div>
+
+      <!-- Error banner -->
+      <div class="error-banner anim-item" *ngIf="loginError" role="alert">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+          <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 3.5a.75.75 0 01.75.75v3a.75.75 0 01-1.5 0v-3A.75.75 0 018 4.5zm0 7a.875.875 0 110-1.75.875.875 0 010 1.75z"/>
+        </svg>
+        {{ loginError }}
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+
+        <!-- Email -->
+        <div class="field anim-item" [class.field--error]="email.invalid && email.touched">
+          <label for="email">Email address</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m2 7 10 7 10-7"/>
+            </svg>
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="you@clinic.com"
+              autocomplete="email"
+              [attr.aria-invalid]="email.invalid && email.touched"
+              aria-describedby="email-error"
+            />
+          </div>
+          <span id="email-error" class="field-error" *ngIf="email.invalid && email.touched">
+            <ng-container *ngIf="email.errors?.['required']">Email is required.</ng-container>
+            <ng-container *ngIf="email.errors?.['email']">Enter a valid email address.</ng-container>
+          </span>
+        </div>
+
+        <!-- Password -->
+        <div class="field anim-item" [class.field--error]="password.invalid && password.touched">
+          <label for="password">Password</label>
+          <div class="input-wrapper">
+            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2"/>
+              <path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            <input
+              id="password"
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              [attr.aria-invalid]="password.invalid && password.touched"
+              aria-describedby="password-error"
+            />
+            <button
+              type="button"
+              class="toggle-pw"
+              (click)="showPassword = !showPassword"
+              [attr.aria-label]="showPassword ? 'Hide password' : 'Show password'"
+            >
+              <svg *ngIf="!showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg *ngIf="showPassword" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <span id="password-error" class="field-error" *ngIf="password.invalid && password.touched">
+            <ng-container *ngIf="password.errors?.['required']">Password is required.</ng-container>
+            <ng-container *ngIf="password.errors?.['minlength']">Minimum 6 characters.</ng-container>
+          </span>
+        </div>
+
+        <!-- Forgot password -->
+        <div class="form-meta anim-item">
+          <label class="remember-me">
+            <input type="checkbox" /> Keep me signed in
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button
+          type="submit"
+          class="btn-login anim-item"
+          [disabled]="isLoading"
+          [@btnState]="btnState"
+          (mouseenter)="btnState = 'hovered'"
+          (mouseleave)="btnState = 'idle'"
+          aria-label="Sign in to DentaMate"
+        >
+          <span *ngIf="!isLoading">Sign In</span>
+          <span *ngIf="isLoading" class="spinner" aria-label="Signing in...">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" aria-hidden="true">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4"/>
+            </svg>
+          </span>
+        </button>
+
+      </form>
+
+      <!-- Footer -->
+      <p class="card-footer anim-item">
+        New to DentaMate? <a href="#">Request access</a>
+      </p>
+
+    </div>
+  </main>
+
+</div>

@@ -1,0 +1,43 @@
+<div class="ai-wrap">
+
+  <!-- Plan usage -->
+  <div class="glass-card usage-card">
+    <div class="usage-header">
+      <div>
+        <p class="usage-title">AI Credits This Month</p>
+        <p class="usage-sub">{{ planLimit.used }} / {{ planLimit.total }} credits used</p>
+      </div>
+      <span class="usage-pct" [class.warn]="usedPct >= 70" [class.critical]="usedPct >= 90">{{ usedPct }}%</span>
+    </div>
+    <div class="usage-bar-wrap">
+      <div class="usage-bar" [class.warn]="usedPct >= 70" [class.critical]="usedPct >= 90" [style.width.%]="usedPct"></div>
+    </div>
+  </div>
+
+  <!-- Period chart -->
+  <div class="glass-card chart-card">
+    <p class="chart-title">AI Credit Usage — Period Wise</p>
+    <canvas #periodCanvas class="chart-canvas"></canvas>
+  </div>
+
+  <!-- Per-doctor usage -->
+  <div class="glass-card section-card">
+    <p class="chart-title" style="margin-bottom:1rem">Credits Used by Doctor</p>
+    <div class="doctor-list">
+      <div *ngFor="let d of doctors" class="doctor-row">
+        <div class="doctor-meta">
+          <div class="doc-avatar">{{ d.doctorName.split(' ').slice(-1)[0][0] }}</div>
+          <div>
+            <p class="doc-name">{{ d.doctorName }}</p>
+            <p class="doc-period">{{ d.period }}</p>
+          </div>
+        </div>
+        <div class="doc-bar-wrap">
+          <div class="doc-bar" [style.width.%]="(d.credits / maxDoctorCredits) * 100"></div>
+        </div>
+        <span class="doc-credits">{{ d.credits }} cr</span>
+      </div>
+    </div>
+  </div>
+
+</div>

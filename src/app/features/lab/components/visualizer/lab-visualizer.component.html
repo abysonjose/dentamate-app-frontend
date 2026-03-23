@@ -1,0 +1,40 @@
+<div class="viz-layout">
+
+  <!-- 3D Canvas -->
+  <div class="canvas-card glass-card">
+    <div class="canvas-header">
+      <div>
+        <h3 class="section-title">🧬 Lab Progress Visualizer</h3>
+        <p class="section-sub">Real-time 3D DNA helix — glows during active uploads</p>
+      </div>
+      <div class="status-indicator" [class.uploading]="isUploading">
+        <span class="status-dot"></span>
+        <span class="status-text">{{ isUploading ? 'Upload in Progress' : 'Idle' }}</span>
+      </div>
+    </div>
+    <canvas #canvas class="three-canvas"></canvas>
+    <div *ngIf="isUploading" class="upload-overlay">
+      <div class="upload-pulse">📤 Uploading results...</div>
+    </div>
+  </div>
+
+  <!-- Info panel -->
+  <div class="info-panel">
+    <div class="glass-card info-card">
+      <div class="info-icon">🔬</div>
+      <h4 class="info-title">DNA Helix Visualization</h4>
+      <p class="info-desc">The 3D helix represents your lab's diagnostic pipeline. Each node is a test in progress. The helix spins faster and glows brighter when a file upload is active.</p>
+    </div>
+    <div class="glass-card info-card">
+      <div class="info-icon">🤖</div>
+      <h4 class="info-title">AI Analysis Ready</h4>
+      <p class="info-desc">Uploaded JPG/PNG files are automatically queued for YOLO v8 dental AI analysis. The doctor receives the AI-annotated results alongside your upload.</p>
+    </div>
+    <div class="glass-card info-card">
+      <div class="info-icon">📡</div>
+      <h4 class="info-title">Real-time Notifications</h4>
+      <p class="info-desc">When you mark a case complete, instant notifications are dispatched to both the patient and the referring doctor across all branches.</p>
+    </div>
+  </div>
+
+</div>

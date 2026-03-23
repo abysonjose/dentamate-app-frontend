@@ -1,0 +1,50 @@
+.treatment-wrap { display: flex; flex-direction: column; gap: 1.25rem; }
+.section-card { padding: 1.25rem; }
+.section-title { font-size: 0.9rem; font-weight: 700; color: var(--text-1); margin-bottom: 1rem; }
+
+.consult-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; }
+.consult-label { font-size: 0.875rem; color: var(--text-2); }
+
+.price-edit-row { display: flex; align-items: center; gap: 0.5rem; }
+.currency { font-size: 0.9rem; color: var(--text-3); }
+.price-input {
+  width: 100px; padding: 0.45rem 0.75rem; background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 8px; color: var(--text-1); font-size: 0.875rem; font-family: inherit; outline: none;
+  &:focus { border-color: var(--accent); }
+}
+
+.rate-list { display: flex; flex-direction: column; gap: 0; }
+.rate-row {
+  display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border-card); flex-wrap: wrap; gap: 0.5rem;
+  &:last-child { border-bottom: none; }
+}
+.rate-meta { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.rate-name { font-size: 0.875rem; font-weight: 600; color: var(--text-1); }
+.rate-code { font-size: 0.7rem; font-family: 'Courier New', monospace; color: var(--accent); background: var(--accent-dim); padding: 1px 6px; border-radius: 4px; }
+.rate-cat  { font-size: 0.72rem; color: var(--text-3); }
+
+.rate-price-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.rate-price { font-size: 0.9rem; font-weight: 700; color: var(--text-1); min-width: 60px; text-align: right; }
+
+.price-input-sm {
+  width: 80px; padding: 0.35rem 0.6rem; background: var(--bg-card); border: 1px solid var(--border-card);
+  border-radius: 8px; color: var(--text-1); font-size: 0.875rem; font-family: inherit; outline: none;
+  &:focus { border-color: var(--accent); }
+}
+
+.btn-edit {
+  font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 7px; border: none; cursor: pointer;
+  background: var(--accent-dim); color: var(--accent); font-family: inherit;
+  &:hover { background: var(--accent); color: white; }
+}
+.btn-save {
+  font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 7px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8); color: white; font-family: inherit;
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-cancel {
+  font-size: 0.75rem; padding: 4px 10px; border-radius: 7px; border: 1px solid var(--border-card);
+  background: transparent; color: var(--text-3); cursor: pointer; font-family: inherit;
+  &:hover { color: var(--text-1); }
+}

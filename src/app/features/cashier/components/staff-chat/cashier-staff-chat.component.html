@@ -1,0 +1,64 @@
+<div class="chat-wrap">
+  <div class="chat-contacts">
+    <p class="chat-section-title">Staff Chat
+      <span *ngIf="totalUnread" class="unread-badge">{{ totalUnread }}</span>
+    </p>
+    <div class="contact-list">
+      <button *ngFor="let c of contacts"
+              class="contact-item"
+              [class.active]="activeContact?.id === c.id"
+              (click)="selectContact(c)">
+        <div class="contact-avatar" [style.border-color]="roleColor(c.role)">
+          {{ roleIcon(c.role) }}
+        </div>
+        <div class="contact-info">
+          <p class="contact-name">{{ c.name }}</p>
+          <p class="contact-role" [style.color]="roleColor(c.role)">{{ c.role | titlecase }}</p>
+          <p class="contact-last">{{ c.lastMessage }}</p>
+        </div>
+        <div class="contact-meta">
+          <span class="online-dot" [class.online]="c.online"></span>
+          <span *ngIf="c.unread" class="unread-count">{{ c.unread }}</span>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <div class="chat-main">
+    <ng-container *ngIf="activeContact">
+      <div class="chat-header">
+        <div class="contact-avatar sm" [style.border-color]="roleColor(activeContact.role)">
+          {{ roleIcon(activeContact.role) }}
+        </div>
+        <div>
+          <p class="chat-header-name">{{ activeContact.name }}</p>
+          <p class="chat-header-role" [style.color]="roleColor(activeContact.role)">
+            {{ activeContact.role | titlecase }}
+            <span class="online-dot" [class.online]="activeContact.online" style="margin-left:4px"></span>
+          </p>
+        </div>
+      </div>
+
+      <div class="msg-list" #msgList>
+        <div *ngFor="let m of messages" class="msg-row" [class.from-me]="m.fromMe">
+          <div class="msg-bubble" [class.mine]="m.fromMe">
+            <p class="msg-text">{{ m.text }}</p>
+            <span class="msg-time">{{ m.time }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" placeholder="Type a message…"
+               [(ngModel)]="newMessage" (keydown)="onKeydown($event)"
+               aria-label="Type a message" />
+        <button class="btn-send" (click)="sendMessage()" aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

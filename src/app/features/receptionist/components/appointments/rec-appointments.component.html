@@ -1,0 +1,110 @@
+<div class="appt-layout">
+
+  <!-- ── Booking Form ── -->
+  <div class="glass-card booking-card">
+    <h3 class="card-title">📅 Book Appointment</h3>
+    <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()" novalidate>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Patient ID <span class="required-star">*</span></label>
+          <input type="text" formControlName="patientId" placeholder="DM-XXXXX" />
+          <span class="field-err" *ngIf="bookingForm.get('patientId')?.errors?.['required'] && bookingForm.get('patientId')?.touched">Patient ID is required</span>
+          <span class="field-err" *ngIf="bookingForm.get('patientId')?.errors?.['pattern'] && bookingForm.get('patientId')?.touched">Format must be DM-XXXXX (e.g. DM-00123)</span>
+        </div>
+        <div class="form-field">
+          <label>Patient Name <span class="optional-tag">(optional)</span></label>
+          <input type="text" formControlName="patientName" placeholder="Full name" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Doctor</label>
+          <select formControlName="doctor">
+            <option value="">Select doctor</option>
+            <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }} — {{ d.specialty }}</option>
+          </select>
+          <span class="field-err" *ngIf="bookingForm.get('doctor')?.invalid && bookingForm.get('doctor')?.touched">Required</span>
+        </div>
+        <div class="form-field">
+          <label>Time Slot</label>
+          <select formControlName="time">
+            <option value="">Select time</option>
+            <option value="09:00 AM">09:00 AM</option>
+            <option value="09:30 AM">09:30 AM</option>
+            <option value="10:00 AM">10:00 AM</option>
+            <option value="10:30 AM">10:30 AM</option>
+            <option value="11:00 AM">11:00 AM</option>
+            <option value="11:30 AM">11:30 AM</option>
+            <option value="02:00 PM">02:00 PM</option>
+            <option value="02:30 PM">02:30 PM</option>
+            <option value="03:00 PM">03:00 PM</option>
+            <option value="03:30 PM">03:30 PM</option>
+            <option value="04:00 PM">04:00 PM</option>
+          </select>
+          <span class="field-err" *ngIf="bookingForm.get('time')?.invalid && bookingForm.get('time')?.touched">Required</span>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Notes</label>
+        <textarea formControlName="notes" rows="2" placeholder="Reason for visit..."></textarea>
+      </div>
+      <div class="fee-banner">
+        💳 Consultation Fee: <strong>₹{{ consultationFee }}</strong>
+        <span class="fee-note">Fixed by clinic admin</span>
+      </div>
+      <button type="submit" class="btn-primary w-full">Confirm Booking</button>
+    </form>
+  </div>
+
+  <!-- ── Interactive Calendar ── -->
+  <div class="glass-card calendar-card">
+    <div class="cal-header">
+      <button class="cal-nav" (click)="prevMonth()">‹</button>
+      <span class="cal-title">{{ calendarTitle }}</span>
+      <button class="cal-nav" (click)="nextMonth()">›</button>
+    </div>
+
+    <p class="cal-hint" *ngIf="!selectedDoctorId">Select a doctor to see unavailable dates</p>
+    <p class="cal-hint red" *ngIf="selectedDoctorId">🔴 Red = Doctor unavailable</p>
+
+    <div class="cal-grid">
+      <div *ngFor="let w of weekDays" class="cal-weekday">{{ w }}</div>
+      <button *ngFor="let day of calendarDays"
+              class="cal-day"
+              [class.other-month]="!day.inMonth"
+              [class.today]="day.isToday"
+              [class.unavailable]="day.isUnavailable"
+              [class.selected]="day.isSelected"
+              [disabled]="!day.inMonth || day.isUnavailable"
+              (click)="selectDay(day)"
+              [attr.aria-label]="day.dateStr + (day.isUnavailable ? ' unavailable' : '')">
+        {{ day.date.getDate() }}
+      </button>
+    </div>
+
+    <div class="cal-legend">
+      <span class="leg-item"><span class="leg-dot today-dot"></span> Today</span>
+      <span class="leg-item"><span class="leg-dot unavail-dot"></span> Unavailable</span>
+      <span class="leg-item"><span class="leg-dot sel-dot"></span> Selected</span>
+    </div>
+  </div>
+
+  <!-- ── Confirm Modal ── -->
+  <div class="modal-backdrop" *ngIf="showConfirm" (click)="closeConfirm()">
+    <div class="modal-box" [@slideIn] (click)="$event.stopPropagation()">
+      <div class="confirm-icon">🎫</div>
+      <h3 class="confirm-title">Appointment Booked!</h3>
+      <div class="token-display-lg">
+        <span class="token-lbl">TOKEN</span>
+        <span class="token-num">{{ confirmedToken }}</span>
+      </div>
+      <div class="fee-collected">
+        <span class="fee-lbl">Consultation Fee Collected</span>
+        <span class="fee-amt">₹{{ confirmedFee }}</span>
+      </div>
+      <p class="confirm-sub">Hand this token to the patient for check-in.</p>
+      <button class="btn-primary w-full" (click)="closeConfirm()">Done</button>
+    </div>
+  </div>
+
+</div>

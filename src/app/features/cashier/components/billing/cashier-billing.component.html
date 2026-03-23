@@ -1,0 +1,187 @@
+<div class="billing-wrap">
+
+  <!-- ── Top KPI strip ── -->
+  <div class="kpi-strip">
+    <div class="kpi-card">
+      <span class="kpi-icon">💰</span>
+      <div>
+        <p class="kpi-label">Total Received</p>
+        <p class="kpi-value green">{{ totals.paid | currency:'INR':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">⏳</span>
+      <div>
+        <p class="kpi-label">Pending</p>
+        <p class="kpi-value amber">{{ totals.pending | currency:'INR':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-icon">📊</span>
+      <div>
+        <p class="kpi-label">Total Billed</p>
+        <p class="kpi-value">{{ totals.total | currency:'INR':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="billing-grid">
+
+    <!-- ── LEFT: Search + Bill ── -->
+    <div class="billing-left">
+
+      <!-- Search bar -->
+      <div class="search-card">
+        <p class="card-title">🔍 Patient Lookup</p>
+        <p class="card-sub">Enter Patient ID to load their pending bill</p>
+        <div class="search-row">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="e.g. DM-PAT-0001"
+            [(ngModel)]="searchQuery"
+            (keydown)="onSearchKey($event)"
+            aria-label="Search patient by ID"
+          />
+          <button class="btn-search" (click)="search()" [disabled]="searching">
+            <span *ngIf="!searching">Search</span>
+            <span *ngIf="searching" class="spinner"></span>
+          </button>
+          <button *ngIf="bill || notFound" class="btn-clear" (click)="clearSearch()" aria-label="Clear search">✕</button>
+        </div>
+        <p *ngIf="notFound" class="not-found">No pending bill found for "{{ searchQuery }}"</p>
+      </div>
+
+      <!-- Bill card -->
+      <div *ngIf="bill" [@fadeSlide] class="bill-card">
+
+        <!-- Patient header -->
+        <div class="bill-patient-header">
+          <div class="bill-avatar">{{ bill.patient.publicName[0] || '?' }}</div>
+          <div class="bill-patient-info">
+            <p class="bill-patient-name">{{ bill.patient.publicName }}</p>
+            <p class="bill-patient-meta">{{ bill.patient.phone }} · Dr. {{ bill.doctor.publicName }}</p>
+            <p class="bill-patient-meta">Bill ID: {{ bill._id }}</p>
+          </div>
+          <span class="status-badge"
+                [style.color]="statusColor(bill.paymentStatus)"
+                [style.background]="statusBg(bill.paymentStatus)">
+            {{ bill.paymentStatus | titlecase }}
+          </span>
+        </div>
+
+        <!-- Already paid banner -->
+        <div *ngIf="bill.paymentStatus === 'paid'" class="paid-banner">
+          ✅ Bill settled on {{ bill.updatedAt | date:'medium' }} via {{ methodLabel(bill.paymentMethod ?? '') }}
+          <span *ngIf="bill.razorpayPaymentId" class="mono"> · {{ bill.razorpayPaymentId }}</span>
+        </div>
+
+        <!-- Line items -->
+        <div class="bill-section">
+          <p class="bill-section-title">🧾 Bill Items</p>
+          <table class="bill-table" aria-label="Bill items">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Type</th>
+                <th class="amount">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of bill.items">
+                <td>{{ item.description }}</td>
+                <td class="mono">{{ item.type }}</td>
+                <td class="amount">{{ item.amount | currency:'INR':'symbol':'1.0-2' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Grand total block -->
+        <div class="bill-footer">
+          <div class="grand-total-block">
+            <div class="grand-row">
+              <span>Subtotal</span>
+              <span>{{ bill.subtotal | currency:'INR':'symbol':'1.0-2' }}</span>
+            </div>
+            <div *ngIf="bill.discount > 0" class="grand-row discount-row">
+              <span>Discount ({{ bill.discount }}%)</span>
+              <span>- {{ (bill.subtotal * bill.discount / 100) | currency:'INR':'symbol':'1.0-2' }}</span>
+            </div>
+            <div *ngIf="bill.tax > 0" class="grand-row">
+              <span>Tax ({{ bill.tax }}%)</span>
+              <span>+ {{ ((bill.subtotal - bill.subtotal * bill.discount / 100) * bill.tax / 100) | currency:'INR':'symbol':'1.0-2' }}</span>
+            </div>
+            <div class="grand-total-row">
+              <span>Grand Total</span>
+              <span class="grand-total-amount">{{ bill.totalAmount | currency:'INR':'symbol':'1.0-2' }}</span>
+            </div>
+          </div>
+
+          <!-- Payment method selector + action -->
+          <div *ngIf="bill.paymentStatus !== 'paid'" class="payment-actions">
+            <div class="method-selector">
+              <button
+                *ngFor="let m of paymentMethods"
+                class="method-btn"
+                [class.active]="selectedMethod === m"
+                (click)="selectedMethod = m">
+                {{ methodLabel(m) }}
+              </button>
+            </div>
+
+            <p *ngIf="errorMsg" class="error-msg">⚠️ {{ errorMsg }}</p>
+
+            <button
+              class="btn-pay"
+              (click)="markAsPaid()"
+              [disabled]="processing">
+              <span *ngIf="!processing">
+                {{ selectedMethod === 'razorpay' ? '🔒 Pay Online' : '✅ Mark as Paid' }}
+                · {{ bill.totalAmount | currency:'INR':'symbol':'1.0-2' }}
+              </span>
+              <span *ngIf="processing" class="spinner white"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Success overlay -->
+        <div *ngIf="paymentSuccess" [@successPop] class="success-overlay">
+          <div class="success-content">
+            <div class="success-icon">💳</div>
+            <p class="success-title">Payment Confirmed!</p>
+            <p class="success-sub">{{ bill.patient.publicName }} · {{ bill.totalAmount | currency:'INR':'symbol':'1.0-2' }}</p>
+            <p class="success-note">📦 Pharmacist notified to enable delivery</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Recent bills ── -->
+    <div class="billing-right">
+      <div class="recent-card">
+        <p class="card-title">🕐 Recent Bills</p>
+        <div class="txn-list">
+          <div *ngFor="let b of bills | slice:0:10" class="txn-row" (click)="bill = b; paymentSuccess = false; errorMsg = ''">
+            <div class="txn-avatar">{{ b.patient.publicName[0] || '?' }}</div>
+            <div class="txn-info">
+              <p class="txn-name">{{ b.patient.publicName }}</p>
+              <p class="txn-meta">{{ b.createdAt | date:'shortDate' }}</p>
+            </div>
+            <div class="txn-right">
+              <p class="txn-amount">{{ b.totalAmount | currency:'INR':'symbol':'1.0-0' }}</p>
+              <span class="txn-status"
+                    [style.color]="statusColor(b.paymentStatus)"
+                    [style.background]="statusBg(b.paymentStatus)">
+                {{ b.paymentStatus | titlecase }}
+              </span>
+            </div>
+          </div>
+          <p *ngIf="bills.length === 0" class="empty-state">No bills yet</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

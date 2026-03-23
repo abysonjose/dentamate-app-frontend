@@ -1,0 +1,45 @@
+.notif-header { padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
+.notif-title-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.25rem; }
+.section-title { font-size: 1rem; font-weight: 700; color: var(--text-1); }
+.section-sub   { font-size: 0.8rem; color: var(--text-3); }
+.notif-actions { display: flex; align-items: center; gap: 0.5rem; }
+.unread-chip {
+  font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+  background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent);
+}
+
+.skeleton-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.notif-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.notif-card {
+  display: flex; align-items: flex-start; gap: 1rem; padding: 1rem 1.25rem;
+  border-left: 3px solid transparent; cursor: pointer; transition: border-color 0.2s, background 0.15s;
+  &.unread { background: rgba(255,255,255,0.04); }
+  &:hover { background: var(--accent-dim); }
+}
+.notif-icon-wrap {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.notif-icon { font-size: 1.2rem; }
+.notif-body { flex: 1; }
+.notif-top { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.3rem; }
+.notif-title-text { font-size: 0.9rem; font-weight: 600; color: var(--text-1); }
+.severity-badge {
+  font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 99px;
+}
+.notif-msg  { font-size: 0.82rem; color: var(--text-2); line-height: 1.5; margin-bottom: 0.3rem; }
+.notif-time { font-size: 0.72rem; color: var(--text-3); }
+.notif-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  flex-shrink: 0; margin-top: 4px;
+}
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.4rem 0.85rem; border-radius: 8px; font-size: 0.78rem; font-weight: 500;
+  background: transparent; border: 1px solid var(--border-card); color: var(--text-2);
+  cursor: pointer; font-family: inherit; transition: background 0.15s, color 0.15s;
+  &:hover { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+}

@@ -1,0 +1,37 @@
+<div class="notif-header glass-card">
+  <div class="notif-title-row">
+    <h3 class="section-title">⚙️ Maintenance & System Alerts</h3>
+    <div class="notif-actions">
+      <span *ngIf="unreadCount > 0" class="unread-chip">{{ unreadCount }} unread</span>
+      <button *ngIf="unreadCount > 0" class="btn-outline" (click)="markAllRead()">Mark all read</button>
+    </div>
+  </div>
+  <p class="section-sub">Software maintenance alerts, system updates, and critical notices for the lab.</p>
+</div>
+
+<div *ngIf="loading" class="skeleton-list">
+  <div class="skeleton" style="height:80px; border-radius:12px;" *ngFor="let i of [1,2,3]"></div>
+</div>
+
+<div *ngIf="!loading" class="notif-list" [@listAnim]="notifications.length">
+  <div *ngFor="let n of notifications"
+       class="notif-card glass-card"
+       [class.unread]="!n.read"
+       [style.border-left-color]="severityColor(n.severity)"
+       (click)="markRead(n.id)">
+    <div class="notif-icon-wrap" [style.background]="severityBg(n.severity)">
+      <span class="notif-icon">{{ typeIcon(n.type) }}</span>
+    </div>
+    <div class="notif-body">
+      <div class="notif-top">
+        <p class="notif-title-text">{{ n.title }}</p>
+        <span class="severity-badge" [style.color]="severityColor(n.severity)" [style.background]="severityBg(n.severity)">
+          {{ n.severity | titlecase }}
+        </span>
+      </div>
+      <p class="notif-msg">{{ n.message }}</p>
+      <p class="notif-time">{{ n.time }}</p>
+    </div>
+    <div class="notif-dot" *ngIf="!n.read"></div>
+  </div>
+</div>

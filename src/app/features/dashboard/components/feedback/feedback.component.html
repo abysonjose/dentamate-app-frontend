@@ -1,0 +1,74 @@
+<div class="glass-card feedback-card">
+
+  <!-- Success state -->
+  <div class="feedback-success" *ngIf="submitted" [@successAnim]>
+    <div class="success-emoji">🎉</div>
+    <h3>Thank you for your feedback!</h3>
+    <p>Your response helps us improve care for all patients.</p>
+    <button class="btn-primary" (click)="submitted = false">Submit Another</button>
+  </div>
+
+  <!-- Form -->
+  <ng-container *ngIf="!submitted">
+    <div class="card-header">
+      <h3>Rate Your Experience</h3>
+      <p>Help us improve by sharing your feedback</p>
+    </div>
+
+    <!-- Rating categories -->
+    <div class="rating-grid">
+      <div class="rating-item" *ngFor="let cat of categories">
+        <div class="rating-label">
+          <span class="cat-icon">{{ cat.icon }}</span>
+          <span>{{ cat.label }}</span>
+        </div>
+        <div class="stars" role="group" [attr.aria-label]="'Rate ' + cat.label">
+          <button *ngFor="let star of getStars(5)"
+                  class="star"
+                  [class.filled]="isStarFilled(cat, star)"
+                  (click)="setRating(cat, star)"
+                  (mouseenter)="hoveredStar[cat.id] = star"
+                  (mouseleave)="hoveredStar[cat.id] = 0"
+                  [attr.aria-label]="star + ' star' + (star > 1 ? 's' : '')"
+                  type="button">
+            ★
+          </button>
+        </div>
+        <span class="rating-val" *ngIf="cat.rating > 0">{{ cat.rating }}/5</span>
+      </div>
+    </div>
+
+    <!-- Comment form -->
+    <form [formGroup]="feedbackForm" (ngSubmit)="submit()" novalidate>
+      <div class="form-field">
+        <label for="comment">Additional Comments</label>
+        <textarea id="comment" formControlName="comment" rows="3"
+                  placeholder="Tell us about your experience..."></textarea>
+        <span class="field-err" *ngIf="feedbackForm.get('comment')?.invalid && feedbackForm.get('comment')?.touched">
+          Please enter at least 10 characters.
+        </span>
+      </div>
+
+      <div class="recommend-group">
+        <p>Would you recommend DentaMate to others?</p>
+        <div class="recommend-btns">
+          <button type="button" class="rec-btn"
+                  [class.yes]="feedbackForm.get('recommend')?.value === true"
+                  (click)="feedbackForm.get('recommend')!.setValue(true)">
+            👍 Yes
+          </button>
+          <button type="button" class="rec-btn"
+                  [class.no]="feedbackForm.get('recommend')?.value === false"
+                  (click)="feedbackForm.get('recommend')!.setValue(false)">
+            👎 No
+          </button>
+        </div>
+        <span class="field-err" *ngIf="feedbackForm.get('recommend')?.invalid && feedbackForm.get('recommend')?.touched">
+          Please select an option.
+        </span>
+      </div>
+
+      <button type="submit" class="btn-primary submit-btn">Submit Feedback</button>
+    </form>
+  </ng-container>
+</div>

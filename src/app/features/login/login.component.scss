@@ -1,0 +1,390 @@
+// ── Layout ──────────────────────────────────────────────────────────────────
+.login-page {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, #020c18 0%, #041830 50%, #061020 100%);
+}
+
+// ── Three.js canvas ──────────────────────────────────────────────────────────
+.canvas-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .canvas-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      rgba(2, 12, 24, 0.15) 0%,
+      rgba(2, 12, 24, 0.0)  40%,
+      rgba(2, 12, 24, 0.65) 65%,
+      rgba(2, 12, 24, 0.92) 100%
+    );
+  }
+}
+
+// ── Brand panel (left) ───────────────────────────────────────────────────────
+.brand-panel {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem 3.5rem;
+  max-width: 520px;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  .brand-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: #f0fdfa;
+  }
+}
+
+.brand-tagline {
+  h1 {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+    color: #f0fdfa;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: rgba(240, 253, 250, 0.6);
+    max-width: 340px;
+  }
+}
+
+.brand-stats {
+  display: flex;
+  gap: 2.5rem;
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #14b8a6;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-label {
+    font-size: 0.78rem;
+    color: rgba(240, 253, 250, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+}
+
+// ── Form panel (right) ───────────────────────────────────────────────────────
+.form-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 480px;
+  padding: 2rem 1.5rem;
+
+  @media (max-width: 900px) {
+    flex: 1;
+    padding: 2rem 1rem;
+  }
+}
+
+// ── Glassmorphism card ───────────────────────────────────────────────────────
+.glass-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 2.5rem 2.25rem;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(20, 184, 166, 0.08) inset,
+    0 1px 0 rgba(255, 255, 255, 0.1) inset;
+}
+
+// ── Card header ──────────────────────────────────────────────────────────────
+.card-header {
+  margin-bottom: 1.75rem;
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #f0fdfa;
+    margin-bottom: 0.35rem;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: rgba(240, 253, 250, 0.55);
+  }
+}
+
+// ── Error banner ─────────────────────────────────────────────────────────────
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  font-size: 0.85rem;
+  color: #fca5a5;
+  margin-bottom: 1.25rem;
+}
+
+// ── Form fields ──────────────────────────────────────────────────────────────
+.field {
+  margin-bottom: 1.1rem;
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: rgba(240, 253, 250, 0.7);
+    margin-bottom: 0.45rem;
+    letter-spacing: 0.01em;
+  }
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  .input-icon {
+    position: absolute;
+    left: 0.9rem;
+    color: rgba(240, 253, 250, 0.35);
+    pointer-events: none;
+    transition: color 0.2s;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.75rem 2.8rem 0.75rem 2.75rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    color: #f0fdfa;
+    font-size: 0.92rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+
+    &::placeholder { color: rgba(240, 253, 250, 0.25); }
+
+    &:focus {
+      border-color: #14b8a6;
+      background: rgba(20, 184, 166, 0.06);
+      box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.15);
+
+      ~ .input-icon { color: #14b8a6; }
+    }
+
+    &:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 100px #041830 inset;
+      -webkit-text-fill-color: #f0fdfa;
+    }
+  }
+
+  .toggle-pw {
+    position: absolute;
+    right: 0.9rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(240, 253, 250, 0.35);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+
+    &:hover { color: #14b8a6; }
+    &:focus-visible {
+      outline: 2px solid #14b8a6;
+      border-radius: 4px;
+    }
+  }
+}
+
+// Error state
+.field--error {
+  .input-wrapper input {
+    border-color: rgba(248, 113, 113, 0.5);
+    background: rgba(248, 113, 113, 0.04);
+  }
+}
+
+.field-error {
+  display: block;
+  font-size: 0.78rem;
+  color: #fca5a5;
+  margin-top: 0.35rem;
+  padding-left: 0.1rem;
+}
+
+// ── Form meta row ────────────────────────────────────────────────────────────
+.form-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  margin-top: 0.25rem;
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.82rem;
+    color: rgba(240, 253, 250, 0.55);
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      accent-color: #14b8a6;
+      width: 14px;
+      height: 14px;
+    }
+  }
+
+  .forgot-link {
+    font-size: 0.82rem;
+    color: #14b8a6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+
+    &:hover { color: #5eead4; }
+    &:focus-visible {
+      outline: 2px solid #14b8a6;
+      border-radius: 3px;
+    }
+  }
+}
+
+// ── Login button ─────────────────────────────────────────────────────────────
+.btn-login {
+  width: 100%;
+  padding: 0.85rem;
+  background: linear-gradient(135deg, #0d9488 0%, #1d4ed8 100%);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  position: relative;
+  overflow: hidden;
+  transition: opacity 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(13, 148, 136, 0.35);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  &:hover:not(:disabled) {
+    box-shadow: 0 6px 28px rgba(13, 148, 136, 0.5);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #14b8a6;
+    outline-offset: 3px;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .spinner {
+    display: flex;
+    justify-content: center;
+
+    svg {
+      animation: spin 0.9s linear infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── Card footer ──────────────────────────────────────────────────────────────
+.card-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.84rem;
+  color: rgba(240, 253, 250, 0.45);
+
+  a {
+    color: #14b8a6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+
+    &:hover { color: #5eead4; }
+    &:focus-visible {
+      outline: 2px solid #14b8a6;
+      border-radius: 3px;
+    }
+  }
+}
+
+// ── Mobile nav bar ───────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .login-page {
+    flex-direction: column;
+  }
+
+  .form-panel {
+    min-height: 100vh;
+    padding: 1.5rem 1rem;
+  }
+
+  .glass-card {
+    padding: 2rem 1.5rem;
+  }
+}

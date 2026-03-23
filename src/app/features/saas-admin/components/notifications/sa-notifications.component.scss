@@ -1,0 +1,40 @@
+.notif-wrap { display: flex; flex-direction: column; gap: 1.25rem; }
+
+.notif-header { display: flex; align-items: center; justify-content: space-between; }
+.section-heading { font-size: 1rem; font-weight: 700; color: var(--text-1); display: flex; align-items: center; gap: 0.5rem; }
+.unread-badge { background: #a855f7; color: white; font-size: 0.65rem; font-weight: 700; padding: 1px 7px; border-radius: 99px; }
+
+.btn-ghost-sm {
+  padding: 0.35rem 0.75rem; border-radius: 7px; border: 1px solid var(--border-card);
+  background: transparent; color: var(--text-2); font-size: 0.75rem; cursor: pointer; font-family: inherit;
+  transition: background 0.15s; &:hover { background: rgba(168,85,247,0.1); color: #a855f7; }
+}
+
+.filter-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+.filter-tab {
+  padding: 0.35rem 0.75rem; border-radius: 7px; font-size: 0.75rem; font-weight: 500;
+  background: transparent; border: 1px solid var(--border-card); color: var(--text-2); cursor: pointer; font-family: inherit;
+  transition: background 0.15s;
+  &.active { background: rgba(168,85,247,0.15); color: #a855f7; border-color: #a855f7; }
+  &:hover:not(.active) { background: var(--bg-card); }
+}
+
+.notif-list { overflow: hidden; }
+.notif-item {
+  display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border-card); cursor: pointer; transition: background 0.15s; position: relative;
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(168,85,247,0.04); }
+  &.unread { background: rgba(168,85,247,0.06); }
+}
+.notif-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 2px; }
+.notif-body { flex: 1; }
+.notif-top  { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem; }
+.notif-title { font-size: 0.88rem; font-weight: 600; color: var(--text-1); flex: 1; }
+.severity-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.notif-time  { font-size: 0.7rem; color: var(--text-3); white-space: nowrap; }
+.notif-msg   { font-size: 0.8rem; color: var(--text-2); line-height: 1.45; }
+.notif-clinic { font-size: 0.7rem; color: var(--text-3); margin-top: 0.25rem; }
+.unread-dot { width: 8px; height: 8px; border-radius: 50%; background: #a855f7; flex-shrink: 0; margin-top: 6px; }
+
+.empty-state { text-align: center; padding: 2rem; color: var(--text-3); font-size: 0.85rem; }

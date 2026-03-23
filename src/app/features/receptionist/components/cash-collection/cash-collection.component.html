@@ -1,0 +1,77 @@
+<div class="cash-layout">
+
+  <!-- Record Payment Form -->
+  <div class="glass-card form-card">
+    <h3 class="card-title">💳 Record Payment</h3>
+
+    <div *ngIf="showSuccess" class="success-banner">✅ Payment recorded successfully!</div>
+
+    <form [formGroup]="payForm" (ngSubmit)="recordPayment()" novalidate>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Patient Name</label>
+          <input type="text" formControlName="patientName" placeholder="Full name" />
+          <span class="field-err" *ngIf="payForm.get('patientName')?.invalid && payForm.get('patientName')?.touched">Required</span>
+        </div>
+        <div class="form-field">
+          <label>Patient ID</label>
+          <input type="text" formControlName="patientId" placeholder="DM-XXXXX or Walk-in" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Service</label>
+          <input type="text" formControlName="service" placeholder="e.g. Root Canal" />
+          <span class="field-err" *ngIf="payForm.get('service')?.invalid && payForm.get('service')?.touched">Required</span>
+        </div>
+        <div class="form-field">
+          <label>Amount ($)</label>
+          <input type="number" formControlName="amount" placeholder="0.00" min="1" />
+          <span class="field-err" *ngIf="payForm.get('amount')?.invalid && payForm.get('amount')?.touched">Enter valid amount</span>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Payment Method</label>
+        <div class="method-group">
+          <label class="method-opt" [class.active]="payForm.get('method')?.value === 'cash'">
+            <input type="radio" formControlName="method" value="cash" /> 💵 Cash
+          </label>
+          <label class="method-opt" [class.active]="payForm.get('method')?.value === 'card'">
+            <input type="radio" formControlName="method" value="card" /> 💳 Card
+          </label>
+          <label class="method-opt" [class.active]="payForm.get('method')?.value === 'upi'">
+            <input type="radio" formControlName="method" value="upi" /> 📱 UPI
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn-primary w-full">Record Payment</button>
+    </form>
+  </div>
+
+  <!-- Today's Collections -->
+  <div class="glass-card table-card">
+    <div class="table-header">
+      <h3 class="card-title">Today's Collections</h3>
+      <div class="total-badge">Total: ₹{{ totalToday | number:'1.0-0' }}</div>
+    </div>
+
+    <div *ngIf="loading" class="skeleton-list">
+      <div class="skeleton" style="height:48px;border-radius:10px" *ngFor="let i of [1,2,3]"></div>
+    </div>
+
+    <div class="payment-list" *ngIf="!loading">
+      <div *ngFor="let p of payments" class="payment-row">
+        <span class="pay-method">{{ methodIcon(p.method) }}</span>
+        <div class="pay-info">
+          <p class="pay-name">{{ p.patientName }}</p>
+          <p class="pay-service">{{ p.service }} · {{ p.patientId }}</p>
+        </div>
+        <div class="pay-right">
+          <p class="pay-amount">₹{{ p.amount }}</p>
+          <p class="pay-time">{{ p.time }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,282 @@
+<!-- Toast -->
+<div *ngIf="toastMsg" class="lab-toast"
+     [class.toast-error]="toastType==='error'"
+     [class.toast-info]="toastType==='info'"
+     [@slideIn]>
+  <span class="toast-dot" [class.dot-error]="toastType==='error'" [class.dot-info]="toastType==='info'"></span>
+  {{ toastMsg }}
+</div>
+
+<!-- Stats bar -->
+<div class="stats-row">
+  <div class="stat-card glass-card">
+    <span class="stat-icon">🧪</span>
+    <div><p class="stat-val">{{ stats.testsToday }}</p><p class="stat-lbl">Tests Today</p></div>
+  </div>
+  <div class="stat-card glass-card">
+    <span class="stat-icon">🧾</span>
+    <div><p class="stat-val">{{ stats.billed }}</p><p class="stat-lbl">Billed</p></div>
+  </div>
+  <div class="stat-card glass-card">
+    <span class="stat-icon">📤</span>
+    <div><p class="stat-val">{{ stats.uploaded }}</p><p class="stat-lbl">Uploaded</p></div>
+  </div>
+  <div class="stat-card glass-card">
+    <span class="stat-icon">⏳</span>
+    <div><p class="stat-val">{{ stats.pending }}</p><p class="stat-lbl">Pending</p></div>
+  </div>
+</div>
+
+<!-- Patient Lookup -->
+<div class="glass-card lookup-card">
+  <h3 class="section-title">Patient Lookup</h3>
+  <p class="section-sub">Enter a Patient User ID to load prescribed lab tests.</p>
+  <div class="lookup-row">
+    <div class="lookup-input-wrap">
+      <span class="lookup-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </span>
+      <input class="lookup-input" type="text" [(ngModel)]="searchId"
+             placeholder="e.g. DM-20481"
+             (keydown.enter)="lookup()"
+             aria-label="Patient User ID" />
+    </div>
+    <button class="btn-primary" (click)="lookup()" [disabled]="loading || !searchId.trim()">
+      <span *ngIf="loading" class="spinner"></span>
+      <span *ngIf="!loading">Search</span>
+    </button>
+    <button *ngIf="patient" class="btn-ghost" (click)="clearPatient()" aria-label="Clear patient">
+      Clear
+    </button>
+  </div>
+  <p *ngIf="notFound" class="not-found-msg">
+    No patient found for "{{ searchId }}". Please check the ID.
+  </p>
+</div>
+
+<!-- ── Patient loaded ── -->
+<ng-container *ngIf="patient" [@slideIn]>
+
+  <!-- Workflow step tracker -->
+  <div class="step-tracker glass-card">
+    <div class="step-item" [class.done]="currentStep > 1" [class.active]="currentStep === 1">
+      <div class="step-circle">
+        <span *ngIf="currentStep <= 1">1</span>
+        <svg *ngIf="currentStep > 1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Select &amp; Bill</span>
+    </div>
+    <div class="step-line" [class.done]="currentStep > 1"></div>
+    <div class="step-item" [class.done]="currentStep > 2" [class.active]="currentStep === 2">
+      <div class="step-circle">
+        <span *ngIf="currentStep <= 2">2</span>
+        <svg *ngIf="currentStep > 2" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Payment</span>
+    </div>
+    <div class="step-line" [class.done]="currentStep > 2"></div>
+    <div class="step-item" [class.done]="currentStep > 3" [class.active]="currentStep === 3">
+      <div class="step-circle">
+        <span *ngIf="currentStep <= 3">3</span>
+        <svg *ngIf="currentStep > 3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Upload Results</span>
+    </div>
+    <div class="step-line" [class.done]="currentStep > 3"></div>
+    <div class="step-item" [class.done]="currentStep === 4" [class.active]="currentStep === 4">
+      <div class="step-circle">
+        <span *ngIf="currentStep < 4">4</span>
+        <svg *ngIf="currentStep === 4" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="step-label">Complete &amp; Notify</span>
+    </div>
+  </div>
+
+  <!-- Patient info bar -->
+  <div class="glass-card patient-info-card">
+    <div class="pi-left">
+      <div class="pi-avatar">{{ patientInitials(patient.name) }}</div>
+      <div>
+        <p class="pi-name">{{ patient.name }}</p>
+        <p class="pi-meta">{{ patient.id }} · {{ patient.branch }}</p>
+        <p class="pi-meta">Referred by {{ patient.doctor }}</p>
+      </div>
+    </div>
+    <div class="pi-right">
+      <div class="pi-bill-box">
+        <span class="pi-bill-lbl">Total</span>
+        <span class="pi-bill-val">₹{{ totalBill }}</span>
+      </div>
+      <div class="pi-bill-box">
+        <span class="pi-bill-lbl">Paid</span>
+        <span class="pi-bill-val accent">₹{{ paidAmount }}</span>
+      </div>
+      <div class="pi-bill-box">
+        <span class="pi-bill-lbl">Uploaded</span>
+        <span class="pi-bill-val">{{ uploadedCount }} / {{ patient.tests.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tests checklist -->
+  <div class="glass-card checklist-card">
+
+    <!-- Header -->
+    <div class="checklist-header">
+      <div>
+        <h3 class="section-title">Prescribed Tests</h3>
+        <p class="section-sub">
+          Tick tests → Generate Bill → Await payment → Upload results → Complete
+        </p>
+      </div>
+      <div class="checklist-actions">
+        <!-- Step 1 action -->
+        <button class="btn-bill-all"
+                (click)="generateBill()"
+                [disabled]="selectedPendingTests.length === 0"
+                title="Generate bill for selected tests">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Generate Bill
+          <span *ngIf="selectedPendingTests.length" class="bill-badge">
+            {{ selectedPendingTests.length }} · ₹{{ selectedBillTotal }}
+          </span>
+        </button>
+
+        <!-- Step 4 action -->
+        <button class="btn-complete"
+                (click)="completeAll()"
+                [disabled]="!canComplete() || completeSent">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ completeSent ? 'Notified ✓' : 'Complete & Notify' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Test rows -->
+    <div class="test-list" [@listAnim]="patient.tests.length">
+      <div *ngFor="let test of patient.tests" class="test-row"
+           [class.row-selected]="selected[test.id] && test.status === 'pending'"
+           [class.row-billed]="test.status === 'billed'"
+           [class.row-paid]="test.status === 'paid'"
+           [class.row-uploaded]="test.status === 'uploaded'"
+           [class.row-completed]="test.status === 'completed'">
+
+        <!-- ── Col 1: Checkbox (only for pending) ── -->
+        <label class="test-check" [for]="'chk-' + test.id"
+               [class.check-disabled]="test.status !== 'pending'"
+               [attr.aria-label]="'Select ' + test.name">
+          <input [id]="'chk-' + test.id" type="checkbox"
+                 [checked]="selected[test.id]"
+                 [disabled]="test.status !== 'pending'"
+                 (change)="toggleSelect(test)" />
+          <span class="checkmark"></span>
+        </label>
+
+        <!-- ── Col 2: Test info ── -->
+        <div class="test-info">
+          <p class="test-name">{{ test.name }}</p>
+          <p class="test-meta">{{ test.code }} · ₹{{ test.price }} · {{ test.prescribedDate }}</p>
+          <p class="test-meta">By {{ test.prescribedBy }}</p>
+        </div>
+
+        <!-- ── Col 3: Status + payment badges ── -->
+        <div class="badge-col">
+          <span class="status-badge"
+                [style.color]="statusColor(test.status)"
+                [style.background]="statusBg(test.status)">
+            {{ statusLabel(test.status) }}
+          </span>
+          <span class="pay-badge" [class.paid]="test.paymentStatus === 'paid'">
+            {{ test.paymentStatus === 'paid' ? '💳 Paid' : '⏳ Unpaid' }}
+          </span>
+        </div>
+
+        <!-- ── Col 4: Actions ── -->
+        <div class="test-actions">
+
+          <!-- Confirm payment (demo — billed but unpaid) -->
+          <button *ngIf="test.status === 'billed' && test.paymentStatus !== 'paid'"
+                  class="btn-sm btn-pay"
+                  (click)="confirmPayment(test)"
+                  title="Simulate payment confirmation">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+            Confirm Pay
+          </button>
+
+          <!-- Upload (enabled only after payment) -->
+          <ng-container *ngIf="canUpload(test)">
+            <label class="btn-sm btn-upload" [for]="'upload-' + test.id"
+                   title="Upload result for {{ test.name }}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 16 12 12 8 16"/>
+                <line x1="12" y1="12" x2="12" y2="21"/>
+                <path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/>
+              </svg>
+              Upload
+            </label>
+            <input [id]="'upload-' + test.id" type="file"
+                   accept=".jpg,.jpeg,.png,.pdf"
+                   class="sr-only"
+                   (change)="uploadResult(test, $event)" />
+          </ng-container>
+
+          <!-- Upload progress bar -->
+          <div *ngIf="uploadingTestId === test.id" class="upload-progress-wrap">
+            <div class="upload-progress-bar">
+              <div class="upload-progress-fill" [style.width.%]="uploadProgress"></div>
+            </div>
+            <span class="upload-pct">{{ uploadProgress }}%</span>
+          </div>
+
+          <!-- Uploaded file chip -->
+          <span *ngIf="test.uploadedFileName && (test.status === 'uploaded' || test.status === 'completed')"
+                class="uploaded-chip" [title]="test.uploadedFileName">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+            </svg>
+            {{ test.uploadedFileName }}
+          </span>
+
+          <!-- Completed tick -->
+          <span *ngIf="test.status === 'completed'" class="completed-chip">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Done
+          </span>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion banner -->
+    <div *ngIf="completeSent" class="complete-banner" [@slideIn]>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+        <polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      All reports completed. Notifications sent to <strong>{{ patient.name }}</strong> and
+      <strong>{{ patient.doctor }}</strong>.
+    </div>
+
+  </div>
+
+</ng-container>
+
+<!-- Empty state -->
+<div *ngIf="!patient && !loading && !notFound" class="empty-state glass-card">
+  <div class="empty-icon">🔬</div>
+  <p class="empty-title">No patient loaded</p>
+  <p class="empty-sub">Enter a Patient User ID above to begin the lab workflow.</p>
+</div>

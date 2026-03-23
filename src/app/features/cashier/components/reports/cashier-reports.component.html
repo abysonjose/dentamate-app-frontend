@@ -1,0 +1,107 @@
+<div class="reports-wrap" [@stagger]>
+
+  <div class="report-card summary-strip">
+    <div class="summary-kpi">
+      <p class="kpi-label">Total Received (6 mo)</p>
+      <p class="kpi-val green">{{ totalReceived | currency:'INR':'symbol':'1.0-0' }}</p>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-kpi">
+      <p class="kpi-label">Total Pending (6 mo)</p>
+      <p class="kpi-val amber">{{ totalPending | currency:'INR':'symbol':'1.0-0' }}</p>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-kpi">
+      <p class="kpi-label">Collection Rate</p>
+      <p class="kpi-val">{{ collectionRate }}%</p>
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="collectionRate"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="report-card chart-card">
+    <div class="chart-header">
+      <div>
+        <p class="card-title">Revenue Overview — Last 6 Months</p>
+        <p class="card-sub">Monthly breakdown of received vs pending payments</p>
+      </div>
+      <div class="chart-toggle">
+        <button [class.active]="activeChart === 'bar'" (click)="activeChart = 'bar'">Bar</button>
+        <button [class.active]="activeChart === 'line'" (click)="activeChart = 'line'">Line</button>
+      </div>
+    </div>
+    <div class="chart-legend">
+      <span class="legend-dot received"></span><span class="legend-label">Received</span>
+      <span class="legend-dot pending"></span><span class="legend-label">Pending</span>
+    </div>
+    <div *ngIf="!loading" class="chart-container">
+      <svg [attr.viewBox]="'0 0 ' + chartW + ' ' + chartH" class="chart-svg" role="img" aria-label="Revenue chart">
+        <defs>
+          <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0d9488"/>
+            <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.7"/>
+          </linearGradient>
+          <linearGradient id="penGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.7"/>
+          </linearGradient>
+        </defs>
+        <g *ngFor="let yl of yLabels()">
+          <line [attr.x1]="padL" [attr.y1]="yl.y" [attr.x2]="chartW - padR" [attr.y2]="yl.y"
+                stroke="var(--border-card)" stroke-width="1" stroke-dasharray="4,4"/>
+          <text [attr.x]="padL - 6" [attr.y]="yl.y + 4" text-anchor="end" font-size="10" fill="var(--text-3)">{{ formatK(yl.val) }}</text>
+        </g>
+        <ng-container *ngIf="activeChart === 'bar'">
+          <g *ngFor="let s of summary; let i = index">
+            <rect [attr.x]="barX(i, 0)" [attr.y]="barY(s.received)" [attr.width]="barW()" [attr.height]="barH(s.received)" rx="3" fill="url(#recGrad)" opacity="0.9">
+              <title>{{ s.month }} Received: {{ s.received | currency:'INR':'symbol':'1.0-0' }}</title>
+            </rect>
+            <rect [attr.x]="barX(i, 1)" [attr.y]="barY(s.pending)" [attr.width]="barW()" [attr.height]="barH(s.pending)" rx="3" fill="url(#penGrad)" opacity="0.9">
+              <title>{{ s.month }} Pending: {{ s.pending | currency:'INR':'symbol':'1.0-0' }}</title>
+            </rect>
+            <text [attr.x]="labelX(i)" [attr.y]="chartH - 8" text-anchor="middle" font-size="11" fill="var(--text-3)">{{ s.month }}</text>
+          </g>
+        </ng-container>
+        <ng-container *ngIf="activeChart === 'line'">
+          <polyline [attr.points]="linePoints('received')" fill="none" stroke="#0d9488" stroke-width="2.5" stroke-linejoin="round"/>
+          <polyline [attr.points]="linePoints('pending')" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round" stroke-dasharray="6,3"/>
+          <g *ngFor="let s of summary; let i = index">
+            <circle [attr.cx]="linePoint(i,'received').x" [attr.cy]="linePoint(i,'received').y" r="4" fill="#0d9488" stroke="var(--bg-card)" stroke-width="2">
+              <title>{{ s.month }} Received: {{ s.received | currency:'INR':'symbol':'1.0-0' }}</title>
+            </circle>
+            <circle [attr.cx]="linePoint(i,'pending').x" [attr.cy]="linePoint(i,'pending').y" r="4" fill="#f59e0b" stroke="var(--bg-card)" stroke-width="2">
+              <title>{{ s.month }} Pending: {{ s.pending | currency:'INR':'symbol':'1.0-0' }}</title>
+            </circle>
+            <text [attr.x]="linePoint(i,'received').x" [attr.y]="chartH - 8" text-anchor="middle" font-size="11" fill="var(--text-3)">{{ s.month }}</text>
+          </g>
+        </ng-container>
+      </svg>
+    </div>
+    <div *ngIf="loading" class="chart-loading"><div class="spinner"></div></div>
+  </div>
+
+  <div class="report-card">
+    <p class="card-title">Monthly Breakdown</p>
+    <table class="report-table" aria-label="Monthly financial breakdown">
+      <thead>
+        <tr><th>Month</th><th>Received</th><th>Pending</th><th>Total</th><th>Collection %</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let s of summary">
+          <td class="month-cell">{{ s.month }}</td>
+          <td class="green">{{ s.received | currency:'INR':'symbol':'1.0-0' }}</td>
+          <td class="amber">{{ s.pending | currency:'INR':'symbol':'1.0-0' }}</td>
+          <td>{{ (s.received + s.pending) | currency:'INR':'symbol':'1.0-0' }}</td>
+          <td>
+            <div class="inline-bar">
+              <div class="inline-fill" [style.width.%]="(s.received / (s.received + s.pending)) * 100"></div>
+              <span>{{ ((s.received / (s.received + s.pending)) * 100) | number:'1.0-0' }}%</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>

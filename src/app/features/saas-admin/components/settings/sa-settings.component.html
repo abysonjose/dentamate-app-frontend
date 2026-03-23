@@ -1,0 +1,94 @@
+<div class="settings-wrap">
+
+  <h2 class="section-heading">Global Settings</h2>
+
+  <div class="settings-grid">
+
+    <!-- Theme -->
+    <div class="setting-card glass-card">
+      <div class="setting-header">
+        <span class="setting-icon">🎨</span>
+        <div>
+          <p class="setting-title">Theme</p>
+          <p class="setting-desc">Toggle between dark and light mode</p>
+        </div>
+      </div>
+      <div class="theme-toggle-row">
+        <span [class.active-theme]="themeService.current === 'dark'">🌙 Dark</span>
+        <label class="toggle-switch" aria-label="Toggle theme">
+          <input type="checkbox" [checked]="themeService.current === 'light'" (change)="themeService.toggle()" />
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        </label>
+        <span [class.active-theme]="themeService.current === 'light'">☀️ Light</span>
+      </div>
+    </div>
+
+    <!-- Sounds -->
+    <div class="setting-card glass-card">
+      <div class="setting-header">
+        <span class="setting-icon">🔊</span>
+        <div>
+          <p class="setting-title">System Sounds</p>
+          <p class="setting-desc">UI interaction and notification sounds</p>
+        </div>
+      </div>
+      <div class="sound-rows">
+        <div class="sound-row">
+          <span>Notification Sounds</span>
+          <label class="toggle-switch" aria-label="Toggle notification sounds">
+            <input type="checkbox" [checked]="soundService.notificationSoundEnabled" (change)="soundService.toggleNotification()" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+        <div class="sound-row">
+          <span>Click Sounds</span>
+          <label class="toggle-switch" aria-label="Toggle click sounds">
+            <input type="checkbox" [checked]="soundService.clickSoundEnabled" (change)="soundService.toggleClick()" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Maintenance -->
+    <div class="setting-card glass-card danger-card">
+      <div class="setting-header">
+        <span class="setting-icon">🔒</span>
+        <div>
+          <p class="setting-title">Maintenance Mode</p>
+          <p class="setting-desc">Block all clinics for platform-wide maintenance</p>
+        </div>
+      </div>
+      <div *ngIf="blockAllDone" class="success-banner">✅ All clinics have been blocked for maintenance.</div>
+      <button class="btn-danger" (click)="blockAllConfirm = true" [disabled]="blockAllDone">
+        🔒 Block All Clinics
+      </button>
+    </div>
+
+    <!-- Security -->
+    <div class="setting-card glass-card">
+      <div class="setting-header">
+        <span class="setting-icon">🛡</span>
+        <div>
+          <p class="setting-title">Security Updates</p>
+          <p class="setting-desc">Push security patches to all clinics</p>
+        </div>
+      </div>
+      <button class="btn-primary">🚀 Push Security Update</button>
+    </div>
+
+  </div>
+
+  <!-- Block All Confirm -->
+  <div *ngIf="blockAllConfirm" class="modal-overlay" (click)="blockAllConfirm = false">
+    <div class="confirm-box glass-card" (click)="$event.stopPropagation()">
+      <p class="confirm-title">⚠ Block All Clinics?</p>
+      <p class="confirm-text">This will immediately block all active clinics. All users will be logged out. Use only for emergency maintenance.</p>
+      <div class="confirm-actions">
+        <button class="btn-danger" (click)="blockAll()">Yes, Block All</button>
+        <button class="btn-ghost" (click)="blockAllConfirm = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+</div>

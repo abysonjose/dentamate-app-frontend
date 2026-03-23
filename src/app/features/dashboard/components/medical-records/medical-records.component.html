@@ -1,0 +1,270 @@
+<div class="glass-card records-card" [class.print-mode]="printMode">
+
+  <!-- ── Card header with 3D folder icon ── -->
+  <div class="card-header no-print">
+    <div class="header-left">
+      <canvas #folderCanvas class="folder-canvas" aria-hidden="true"></canvas>
+      <h3>Medical Records</h3>
+    </div>
+    <div class="tab-group" role="tablist">
+      <button role="tab" [class.active]="activeTab === 'prescriptions'"
+              (click)="activeTab = 'prescriptions'; selectedRecord = null"
+              [attr.aria-selected]="activeTab === 'prescriptions'">
+        💊 Prescriptions
+      </button>
+      <button role="tab" [class.active]="activeTab === 'labs'"
+              (click)="activeTab = 'labs'"
+              [attr.aria-selected]="activeTab === 'labs'">
+        🔬 Lab Reports
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       TAB: PRESCRIPTIONS — full history view
+  ════════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'prescriptions'">
+
+    <!-- Filter bar -->
+    <form [formGroup]="filterForm" class="filter-bar no-print" aria-label="Filter prescriptions">
+      <div class="filter-field">
+        <label for="fDoc">Doctor</label>
+        <select id="fDoc" formControlName="doctor">
+          <option value="">All Doctors</option>
+          <option *ngFor="let d of doctorNames" [value]="d">{{ d }}</option>
+        </select>
+      </div>
+      <div class="filter-field">
+        <label for="fFrom">From</label>
+        <input id="fFrom" type="date" formControlName="dateFrom" />
+      </div>
+      <div class="filter-field">
+        <label for="fTo">To</label>
+        <input id="fTo" type="date" formControlName="dateTo" />
+      </div>
+      <button type="button" class="btn-clear" (click)="clearFilters()">✕ Clear</button>
+    </form>
+
+    <!-- Two-column layout: list + detail -->
+    <div class="rx-layout">
+
+      <!-- ── Chronological list ── -->
+      <div class="rx-list-col no-print">
+
+        <!-- Skeleton -->
+        <ng-container *ngIf="loadingRx">
+          <div *ngFor="let i of [1,2,3]">
+            <div class="skeleton" style="height:14px;width:100px;margin:16px 0 8px"></div>
+            <div class="skeleton" style="height:72px;border-radius:12px;margin-bottom:6px"></div>
+          </div>
+        </ng-container>
+
+        <!-- Empty -->
+        <div class="empty-state" *ngIf="!loadingRx && filteredGroups.length === 0">
+          <span>📂</span>
+          <p>No records match your filters.</p>
+          <button class="btn-clear" (click)="clearFilters()">Clear Filters</button>
+        </div>
+
+        <!-- Groups -->
+        <ng-container *ngFor="let group of filteredGroups">
+          <div class="date-divider">
+            <span class="date-label">{{ formatDate(group.date) }}</span>
+            <div class="date-line"></div>
+          </div>
+
+          <div *ngFor="let record of group.records" [@listAnim]="filteredGroups.length"
+               class="visit-card"
+               [class.selected]="selectedRecord?.visitId === record.visitId"
+               (click)="selectRecord(record)"
+               role="button"
+               [attr.aria-expanded]="selectedRecord?.visitId === record.visitId">
+
+            <div class="visit-left">
+              <div class="doc-avatar">{{ getDoctorInitials(record.doctorName) }}</div>
+              <div class="visit-meta">
+                <p class="visit-doctor">{{ record.doctorName }}</p>
+                <p class="visit-dept">{{ record.department }}</p>
+                <div class="visit-tags">
+                  <span class="tag tag-med">💊 {{ record.medications.length }} med{{ record.medications.length !== 1 ? 's' : '' }}</span>
+                  <span class="tag tag-lab" *ngIf="record.labTests.length">🔬 {{ record.labTests.length }} test{{ record.labTests.length !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="visit-right">
+              <span class="status-pill" [class.paid]="record.billStatus==='paid'" [class.unpaid]="record.billStatus==='unpaid'" [class.partial]="record.billStatus==='partial'">
+                {{ record.billStatus === 'paid' ? '✓ Paid' : record.billStatus === 'unpaid' ? '⚠ Unpaid' : '~ Partial' }}
+              </span>
+              <span class="lab-badge" *ngIf="hasLabReady(record)">📋 Lab Ready</span>
+              <span class="ocr-badge" *ngIf="!record.ocrVerified">⚠ Unverified</span>
+              <svg class="chevron" [class.rotated]="selectedRecord?.visitId === record.visitId"
+                   width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ── Digital Prescription Detail ── -->
+      <div class="rx-detail-col" [class.has-selection]="selectedRecord">
+
+        <div class="detail-placeholder no-print" *ngIf="!selectedRecord" [@fadeIn]>
+          <span>📄</span>
+          <p>Select a visit to view the full prescription</p>
+        </div>
+
+        <div class="rx-card" *ngIf="selectedRecord" [@detailSlide]>
+
+          <!-- Actions bar -->
+          <div class="rx-actions no-print">
+            <button class="btn-print" (click)="printPrescription()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 6 2 18 2 18 9"/>
+                <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+                <rect x="6" y="14" width="12" height="8"/>
+              </svg>
+              Print / Save PDF
+            </button>
+            <button class="btn-close" (click)="selectedRecord = null" aria-label="Close">✕</button>
+          </div>
+
+          <!-- Rx Header -->
+          <div class="rx-header">
+            <div class="rx-brand">
+              <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+                <circle cx="20" cy="20" r="20" fill="url(#rg)"/>
+                <path d="M13 14c0-3.866 3.134-7 7-7s7 3.134 7 7c0 2.5-1.3 4.7-3.25 6L20 28l-3.75-8C14.3 18.7 13 16.5 13 14z" fill="white" opacity="0.9"/>
+                <defs><linearGradient id="rg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#0d9488"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs>
+              </svg>
+              <div>
+                <p class="clinic-name">DentaMate Dental Clinic</p>
+                <p class="clinic-addr">123 Health Avenue, Austin, TX 78701</p>
+              </div>
+            </div>
+            <span class="rx-symbol">℞</span>
+          </div>
+
+          <div class="rx-divider"></div>
+
+          <!-- Patient + Provider + Date -->
+          <div class="rx-info-grid">
+            <div class="info-block">
+              <p class="info-lbl">Patient</p>
+              <p class="info-val">{{ selectedRecord.patientName }}</p>
+              <p class="info-sub">DOB: {{ formatShortDate(selectedRecord.patientDob) }}</p>
+              <p class="info-sub">{{ selectedRecord.patientAddress }}</p>
+            </div>
+            <div class="info-block">
+              <p class="info-lbl">Prescriber</p>
+              <p class="info-val">{{ selectedRecord.doctorName }}</p>
+              <p class="info-sub">{{ selectedRecord.department }}</p>
+              <p class="info-sub">{{ selectedRecord.doctorContact }}</p>
+            </div>
+            <div class="info-block">
+              <p class="info-lbl">Date Written</p>
+              <p class="info-val">{{ formatShortDate(selectedRecord.visitDate) }}</p>
+              <span class="ocr-status" [class.verified]="selectedRecord.ocrVerified">
+                {{ selectedRecord.ocrVerified ? '✓ OCR Verified' : '⚠ Pending Verification' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="rx-divider"></div>
+
+          <!-- Medications -->
+          <p class="section-lbl">Medications</p>
+          <div class="med-list">
+            <div class="med-item" *ngFor="let med of selectedRecord.medications; let i = index">
+              <div class="med-num">{{ i + 1 }}</div>
+              <div class="med-body">
+                <div class="med-name-row">
+                  <span class="med-name">{{ med.name }}</span>
+                  <span class="med-strength">{{ med.strength }}</span>
+                  <span class="med-form">{{ med.form }}</span>
+                  <span class="med-route">via {{ med.route }}</span>
+                </div>
+                <div class="sig-row">
+                  <div class="sig-doses">
+                    <div *ngFor="let d of sigDoses(med)" class="sig-chip" [class.active]="d.active" [attr.aria-label]="d.label">
+                      <span>{{ d.icon }}</span>
+                      <span class="sig-lbl">{{ d.label }}</span>
+                    </div>
+                  </div>
+                  <span class="food-chip" [class.before]="med.sig.beforeFood" [class.after]="!med.sig.beforeFood">
+                    🍽 {{ med.sig.beforeFood ? 'Before Food' : 'After Food' }}
+                  </span>
+                  <span class="duration-chip">📅 {{ med.durationDays }}d{{ med.sig.days ? ' · ' + med.sig.days : '' }}</span>
+                </div>
+                <p class="med-notes" *ngIf="med.notes">ℹ {{ med.notes }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lab Tests -->
+          <ng-container *ngIf="selectedRecord.labTests.length">
+            <div class="rx-divider"></div>
+            <p class="section-lbl">Lab Tests Ordered</p>
+            <div class="lab-list">
+              <div class="lab-row" *ngFor="let lab of selectedRecord.labTests">
+                <span>🔬</span>
+                <span class="lab-name">{{ lab.name }}</span>
+                <span class="lab-chip" [class.ready]="lab.status==='ready'" [class.pending]="lab.status==='pending'">
+                  {{ lab.status === 'ready' ? '✓ Ready' : '⏳ Pending' }}
+                </span>
+                <button *ngIf="lab.status === 'ready'" class="btn-dl" aria-label="Download">⬇ Download</button>
+              </div>
+            </div>
+          </ng-container>
+
+          <div class="rx-divider"></div>
+
+          <!-- Footer -->
+          <div class="rx-footer">
+            <div>
+              <p class="info-lbl">Next Appointment</p>
+              <p class="info-val">{{ selectedRecord.nextVisitDate ? formatShortDate(selectedRecord.nextVisitDate) : 'As advised' }}</p>
+            </div>
+            <div class="rx-sig">
+              <div class="sig-line"></div>
+              <p>{{ selectedRecord.doctorName }}</p>
+              <p class="info-sub">Digital Signature</p>
+            </div>
+          </div>
+
+          <!-- Bill banner -->
+          <div class="bill-banner" [class.paid]="selectedRecord.billStatus==='paid'" [class.unpaid]="selectedRecord.billStatus==='unpaid'" [class.partial]="selectedRecord.billStatus==='partial'">
+            <span *ngIf="selectedRecord.billStatus==='paid'">✓ Bill Fully Paid</span>
+            <span *ngIf="selectedRecord.billStatus==='unpaid'">⚠ Bill Outstanding — Please visit the cashier</span>
+            <span *ngIf="selectedRecord.billStatus==='partial'">~ Partial Payment Received</span>
+          </div>
+
+        </div><!-- /rx-card -->
+      </div><!-- /rx-detail-col -->
+    </div><!-- /rx-layout -->
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       TAB: LAB REPORTS
+  ════════════════════════════════════════════════════════════════════ -->
+  <div *ngIf="activeTab === 'labs'" [@listAnim]="labReports.length">
+    <ng-container *ngIf="loadingLab">
+      <div *ngFor="let i of [1,2,3]" class="skeleton" style="height:56px;margin-bottom:8px;border-radius:10px"></div>
+    </ng-container>
+    <div class="record-row" *ngFor="let lab of labReports">
+      <div class="record-icon">📄</div>
+      <div class="record-info">
+        <p class="record-name">{{ lab.name }}</p>
+        <p class="record-meta">{{ lab.date }}</p>
+      </div>
+      <span class="status-badge" [class.ready]="lab.status === 'ready'" [class.pending]="lab.status === 'pending'">
+        {{ lab.status | titlecase }}
+      </span>
+      <button class="action-btn download" (click)="download(lab)" [disabled]="lab.status === 'pending'" aria-label="Download report">
+        ⬇ Download
+      </button>
+    </div>
+  </div>
+
+</div>

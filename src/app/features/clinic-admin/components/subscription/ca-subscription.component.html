@@ -1,0 +1,44 @@
+<div class="sub-wrap" *ngIf="sub">
+
+  <div class="glass-card plan-card">
+    <div class="plan-header">
+      <div>
+        <p class="plan-name">{{ sub.plan }} Plan</p>
+        <p class="plan-cycle">{{ sub.billingCycle | titlecase }} · ₹{{ sub.price }}/mo</p>
+      </div>
+      <span class="days-badge" [class.urgent]="daysLeft(sub.expiryDate) <= 7">
+        {{ daysLeft(sub.expiryDate) }} days left
+      </span>
+    </div>
+    <p class="expiry-date">Expires: {{ sub.expiryDate }}</p>
+    <div class="plan-actions">
+      <button class="btn-primary">Upgrade Plan</button>
+      <button class="btn-outline">Add-on Plans</button>
+      <button class="btn-danger">Cancel Subscription</button>
+    </div>
+  </div>
+
+  <div class="metrics-grid">
+    <div class="glass-card metric-card">
+      <p class="metric-label">Users Registered</p>
+      <p class="metric-value">{{ sub.usersUsed }} / {{ sub.usersLimit }}</p>
+      <div class="metric-bar-wrap">
+        <div class="metric-bar" [class.warn]="userPct >= 80" [style.width.%]="userPct"></div>
+      </div>
+    </div>
+    <div class="glass-card metric-card">
+      <p class="metric-label">AI Credits Used</p>
+      <p class="metric-value">{{ sub.aiCreditsUsed }} / {{ sub.aiCreditsLimit }}</p>
+      <div class="metric-bar-wrap">
+        <div class="metric-bar purple" [class.warn]="aiPct >= 70" [style.width.%]="aiPct"></div>
+      </div>
+    </div>
+    <div class="glass-card metric-card">
+      <p class="metric-label">Pending Amount</p>
+      <p class="metric-value" [class.zero]="sub.pendingAmount === 0">
+        {{ sub.pendingAmount === 0 ? 'Nil' : '₹' + sub.pendingAmount }}
+      </p>
+    </div>
+  </div>
+
+</div>

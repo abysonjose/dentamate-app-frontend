@@ -1,0 +1,101 @@
+<div class="overview-wrap">
+
+  <!-- Stat cards -->
+  <div class="stat-grid">
+    <div class="stat-card booked">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="stat-body">
+        <p class="stat-label">Booked Today</p>
+        <p class="stat-value">{{ stats.booked }}</p>
+      </div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="stat-body">
+        <p class="stat-label">Completed</p>
+        <p class="stat-value">{{ stats.completed }}</p>
+      </div>
+    </div>
+    <div class="stat-card cancelled">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+      <div class="stat-body">
+        <p class="stat-label">Cancelled</p>
+        <p class="stat-value">{{ stats.cancelled }}</p>
+      </div>
+    </div>
+    <div class="stat-card online">
+      <div class="stat-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      </div>
+      <div class="stat-body">
+        <p class="stat-label">Online / Total Users</p>
+        <p class="stat-value">{{ stats.onlineUsers }} <span class="stat-sub">/ {{ stats.totalUsers }}</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts row -->
+  <div class="charts-row">
+    <div class="chart-card glass-card">
+      <div class="chart-header">
+        <p class="chart-title">Appointments This Week</p>
+        <div class="chart-legend">
+          <span class="leg teal">Booked</span>
+          <span class="leg blue">Completed</span>
+          <span class="leg rose">Cancelled</span>
+        </div>
+      </div>
+      <canvas #apptCanvas class="chart-canvas"></canvas>
+    </div>
+
+    <div class="chart-card glass-card">
+      <div class="chart-header">
+        <p class="chart-title">Revenue This Year</p>
+      </div>
+      <canvas #revCanvas class="chart-canvas"></canvas>
+    </div>
+  </div>
+
+  <!-- Branch revenue bars -->
+  <div class="glass-card branch-card">
+    <p class="chart-title" style="margin-bottom:1rem">Branch Revenue Comparison</p>
+    <div class="branch-list">
+      <div *ngFor="let b of branches" class="branch-row">
+        <div class="branch-meta">
+          <span class="branch-name">{{ b.name }}</span>
+          <span class="branch-loc">{{ b.location }}</span>
+        </div>
+        <div class="branch-bar-wrap">
+          <div class="branch-bar" [style.width.%]="(b.revenue / maxBranchRev) * 100"></div>
+        </div>
+        <div class="branch-stats">
+          <span class="branch-rev">₹{{ b.revenue.toLocaleString('en-IN') }}</span>
+          <span class="branch-pts">{{ b.patients }} pts</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Financial summary -->
+  <div class="fin-grid">
+    <div class="fin-card glass-card received">
+      <p class="fin-label">Total Received</p>
+      <p class="fin-value">₹{{ financial.totalReceived.toLocaleString('en-IN') }}</p>
+    </div>
+    <div class="fin-card glass-card expenditure">
+      <p class="fin-label">Expenditure</p>
+      <p class="fin-value">₹{{ financial.totalExpenditure.toLocaleString('en-IN') }}</p>
+    </div>
+    <div class="fin-card glass-card pending">
+      <p class="fin-label">Pending Amount</p>
+      <p class="fin-value">₹{{ financial.pendingAmount.toLocaleString('en-IN') }}</p>
+    </div>
+  </div>
+
+</div>

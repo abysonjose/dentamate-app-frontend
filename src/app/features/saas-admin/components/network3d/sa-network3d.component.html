@@ -1,0 +1,36 @@
+<div class="net3d-wrap">
+
+  <div class="net3d-header">
+    <h2 class="section-heading">3D Server Network — Digital Twin</h2>
+    <div class="legend">
+      <span class="leg-item"><span class="leg-dot green"></span>Healthy</span>
+      <span class="leg-item"><span class="leg-dot amber"></span>Warning</span>
+      <span class="leg-item"><span class="leg-dot red"></span>Critical</span>
+    </div>
+  </div>
+
+  <div class="canvas-wrap glass-card">
+    <canvas #netCanvas class="net-canvas" (window:resize)="onResize()"></canvas>
+    <div class="canvas-overlay">
+      <div class="overlay-stat" *ngFor="let srv of servers" [class.critical]="srv.status === 'critical'" [class.warning]="srv.status === 'warning'">
+        <span class="stat-name">{{ srv.name }}</span>
+        <span class="stat-load">Load: {{ srv.load.toFixed(0) }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="server-status-row">
+    <div *ngFor="let srv of servers" class="srv-mini glass-card" [class.critical]="srv.status === 'critical'" [class.warning]="srv.status === 'warning'">
+      <div class="srv-mini-dot" [style.background]="srv.status === 'healthy' ? '#22c55e' : srv.status === 'warning' ? '#f59e0b' : '#ef4444'"></div>
+      <div>
+        <p class="srv-mini-name">{{ srv.name }}</p>
+        <p class="srv-mini-region">{{ srv.region }}</p>
+      </div>
+      <div class="srv-mini-stats">
+        <span>CPU {{ srv.cpu.toFixed(0) }}%</span>
+        <span>MEM {{ srv.memory.toFixed(0) }}%</span>
+      </div>
+    </div>
+  </div>
+
+</div>

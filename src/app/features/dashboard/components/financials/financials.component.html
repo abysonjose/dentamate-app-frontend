@@ -1,0 +1,39 @@
+<div class="glass-card fin-card">
+  <div class="card-header">
+    <h3>Recent Bills</h3>
+    <div class="outstanding-badge" *ngIf="!loading">
+      <span>Outstanding</span>
+      <strong>₹{{ outstanding }}</strong>
+    </div>
+  </div>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="loading">
+    <div *ngFor="let i of [1,2,3]" class="skeleton" style="height:60px;margin-bottom:8px;border-radius:10px"></div>
+  </ng-container>
+
+  <!-- Bills list -->
+  <div [@fadeSlide] *ngIf="!loading">
+    <div class="bill-row" *ngFor="let bill of bills" [class.paid]="bill.paid">
+      <div class="bill-icon">{{ bill.paid ? '✅' : '💳' }}</div>
+      <div class="bill-info">
+        <p class="bill-desc">{{ bill.description }}</p>
+        <p class="bill-due">Due: {{ bill.due }}</p>
+      </div>
+      <div class="bill-right">
+        <span class="bill-amount" [class.paid-amount]="bill.paid">₹{{ bill.amount }}</span>
+        <button *ngIf="!bill.paid" class="pay-btn"
+                (click)="pay(bill)"
+                [disabled]="payingId === bill.id"
+                [attr.aria-label]="'Pay $' + bill.amount + ' for ' + bill.description">
+          {{ payingId === bill.id ? '...' : 'Pay Now' }}
+        </button>
+        <span *ngIf="bill.paid" class="paid-label">Paid</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="fin-footer" *ngIf="!loading && outstanding > 0">
+    <button class="btn-pay-all">Pay All Outstanding (₹{{ outstanding }})</button>
+  </div>
+</div>

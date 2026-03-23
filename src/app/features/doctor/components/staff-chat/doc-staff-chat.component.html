@@ -1,0 +1,77 @@
+<div class="chat-page glass-card">
+
+  <!-- ── Contact List ── -->
+  <div class="contact-list">
+    <div class="contact-header">
+      <h3>Staff Chat</h3>
+      <span class="unread-total" *ngIf="totalUnread">{{ totalUnread }}</span>
+    </div>
+    <div class="contact-item"
+         *ngFor="let c of contacts"
+         [class.active]="activeContact?.id === c.id"
+         (click)="selectContact(c)">
+      <div class="contact-avatar" [style.background]="roleColor(c.role) + '33'" [style.color]="roleColor(c.role)">
+        {{ initials(c.name) }}
+        <span class="online-dot" *ngIf="c.online"></span>
+      </div>
+      <div class="contact-info">
+        <span class="contact-name">{{ c.name }}</span>
+        <span class="contact-role">{{ c.role }}</span>
+      </div>
+      <span class="contact-badge" *ngIf="c.unread">{{ c.unread }}</span>
+    </div>
+  </div>
+
+  <!-- ── Chat Area ── -->
+  <div class="chat-area">
+    <ng-container *ngIf="activeContact; else noContact">
+
+      <!-- Chat header -->
+      <div class="chat-header">
+        <div class="contact-avatar sm" [style.background]="roleColor(activeContact.role) + '33'" [style.color]="roleColor(activeContact.role)">
+          {{ initials(activeContact.name) }}
+          <span class="online-dot" *ngIf="activeContact.online"></span>
+        </div>
+        <div>
+          <p class="ch-name">{{ activeContact.name }}</p>
+          <p class="ch-role">{{ activeContact.role }} · <span [style.color]="activeContact.online ? '#4ade80' : '#94a3b8'">{{ activeContact.online ? 'Online' : 'Offline' }}</span></p>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="msg-list" #msgList>
+        <div *ngFor="let msg of messages"
+             class="msg-row"
+             [class.from-me]="msg.fromMe"
+             [@msgIn]>
+          <div class="msg-bubble" [class.mine]="msg.fromMe">
+            <p class="msg-text">{{ msg.text }}</p>
+            <span class="msg-time">{{ msg.time }}</span>
+          </div>
+        </div>
+        <div *ngIf="!messages.length" class="no-msgs">
+          <p>No messages yet. Say hello!</p>
+        </div>
+      </div>
+
+      <!-- Input -->
+      <div class="chat-input-row">
+        <textarea class="chat-input" [(ngModel)]="newMessage" (keydown)="onKeydown($event)"
+                  placeholder="Type a message... (Enter to send)" rows="1"></textarea>
+        <button class="send-btn" (click)="send()" [disabled]="!newMessage.trim()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+
+    </ng-container>
+    <ng-template #noContact>
+      <div class="no-contact">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+        <p>Select a contact to start chatting</p>
+      </div>
+    </ng-template>
+  </div>
+
+</div>

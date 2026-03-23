@@ -1,0 +1,252 @@
+<div class="clinics-wrap">
+
+  <div class="clinics-header">
+    <h2 class="section-heading">Clinic Management</h2>
+    <div class="header-actions">
+      <button class="btn-register-clinic" (click)="openRegisterModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Register Clinic
+      </button>
+      <button class="btn-maintenance-outline" (click)="openMaintenance(null)">🔧 Broadcast Maintenance</button>
+      <button class="btn-danger-outline" (click)="blockAllConfirm = true">🔒 Block All (Maintenance)</button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar glass-card">
+    <input type="text" class="search-input" placeholder="Search clinics or owners…" [(ngModel)]="searchTerm" (ngModelChange)="applyFilter()" />
+    <div class="filter-tabs">
+      <button *ngFor="let s of ['all','active','suspended','blocked']" class="filter-tab" [class.active]="filterStatus === s" (click)="filterStatus = s; applyFilter()">
+        {{ s | titlecase }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap glass-card">
+    <table class="clinics-table">
+      <thead>
+        <tr>
+          <th>Clinic</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>Users</th>
+          <th>AI Credits</th>
+          <th>Location</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filtered" [class.blocked-row]="c.status === 'blocked'">
+          <td>
+            <div class="clinic-cell">
+              <div class="clinic-avatar" [style.background]="getPlanColor(c.plan) + '22'" [style.color]="getPlanColor(c.plan)">
+                {{ c.name.charAt(0) }}
+              </div>
+              <div>
+                <p class="clinic-name">{{ c.name }}</p>
+                <p class="clinic-owner">{{ c.owner }}</p>
+              </div>
+            </div>
+          </td>
+          <td><span class="plan-tag" [style.background]="getPlanColor(c.plan) + '22'" [style.color]="getPlanColor(c.plan)">{{ c.plan }}</span></td>
+          <td>
+            <span class="status-dot" [style.background]="getStatusColor(c.status)"></span>
+            <span class="status-text" [style.color]="getStatusColor(c.status)">{{ c.status | titlecase }}</span>
+          </td>
+          <td class="td-num">{{ c.users }}</td>
+          <td>
+            <div class="credit-bar-wrap">
+              <div class="credit-bar-track">
+                <div class="credit-bar-fill" [style.width.%]="(c.aiCreditsUsed / c.aiCreditsLimit) * 100"
+                  [style.background]="(c.aiCreditsUsed / c.aiCreditsLimit) > 0.8 ? '#ef4444' : '#a855f7'"></div>
+              </div>
+              <span class="credit-text">{{ c.aiCreditsUsed }}/{{ c.aiCreditsLimit }}</span>
+            </div>
+          </td>
+          <td class="td-loc">{{ c.location }}</td>
+          <td>
+            <div class="action-btns">
+              <button class="act-btn green" *ngIf="c.status !== 'active'" (click)="setStatus(c, 'active')" title="Activate">✓</button>
+              <button class="act-btn amber" *ngIf="c.status === 'active'" (click)="setStatus(c, 'suspended')" title="Suspend">⏸</button>
+              <button class="act-btn red" *ngIf="c.status !== 'blocked'" (click)="setStatus(c, 'blocked')" title="Block">🔒</button>
+              <button class="act-btn purple" (click)="openModules(c)" title="Modules">⚙</button>
+              <button class="act-btn orange" (click)="openMaintenance(c)" title="Send Maintenance Notice">🔧</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <p *ngIf="!filtered.length" class="empty-state">No clinics match the current filter.</p>
+  </div>
+
+  <!-- Module Toggle Modal -->
+  <div *ngIf="showModuleModal && moduleClinic" class="modal-overlay" (click)="showModuleModal = false">
+    <div class="modal-box glass-card" (click)="$event.stopPropagation()">
+      <h3 class="modal-title">Module Control — {{ moduleClinic.name }}</h3>
+      <p class="modal-sub">Toggle modules for this clinic. Changes take effect immediately.</p>
+      <div class="module-list">
+        <div *ngFor="let key of moduleKeys" class="module-row">
+          <span class="module-label">{{ moduleLabels[key] }}</span>
+          <label class="toggle-switch" [attr.aria-label]="moduleLabels[key]">
+            <input type="checkbox" [(ngModel)]="modulesCopy[key]" />
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" (click)="saveModules()">Save Changes</button>
+        <button class="btn-ghost" (click)="showModuleModal = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Block All Confirm -->
+  <div *ngIf="blockAllConfirm" class="modal-overlay" (click)="blockAllConfirm = false">
+    <div class="confirm-box glass-card" (click)="$event.stopPropagation()">
+      <p class="confirm-title">⚠ Block All Clinics?</p>
+      <p class="confirm-text">This will block all active clinics immediately. Use only for emergency maintenance.</p>
+      <div class="confirm-actions">
+        <button class="btn-danger" (click)="blockAll()">Yes, Block All</button>
+        <button class="btn-ghost" (click)="blockAllConfirm = false">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Maintenance Notification Modal -->
+  <div *ngIf="showMaintenanceModal" class="modal-overlay" (click)="showMaintenanceModal = false">
+    <div class="modal-box glass-card maintenance-modal" (click)="$event.stopPropagation()">
+
+      <div *ngIf="!maintenanceSent">
+        <div class="maint-header">
+          <span class="maint-icon">🔧</span>
+          <div>
+            <h3 class="modal-title">Schedule Maintenance Notice</h3>
+            <p class="modal-sub">
+              {{ maintenanceClinic ? 'Notify: ' + maintenanceClinic.name : 'Broadcast to all clinics' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="maint-form">
+          <div class="form-row">
+            <label class="form-label">Date</label>
+            <input type="date" class="form-input" [(ngModel)]="maintenanceDate" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Time (UTC)</label>
+            <input type="time" class="form-input" [(ngModel)]="maintenanceTime" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">Message</label>
+            <textarea class="form-input form-textarea" [(ngModel)]="maintenanceMsg"
+              placeholder="e.g. Scheduled system upgrade. Expect 30 min downtime." rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="maint-preview" *ngIf="maintenanceDate && maintenanceTime && maintenanceMsg">
+          <span class="preview-label">Preview</span>
+          <p class="preview-text">{{ maintenanceMsg }} — Scheduled: {{ maintenanceDate }} {{ maintenanceTime }}</p>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn-primary" (click)="sendMaintenance()"
+            [disabled]="!maintenanceDate || !maintenanceTime || !maintenanceMsg.trim()">
+            📤 Send Notification
+          </button>
+          <button class="btn-ghost" (click)="showMaintenanceModal = false">Cancel</button>
+        </div>
+      </div>
+
+      <div *ngIf="maintenanceSent" class="maint-success">
+        <span class="success-icon">✅</span>
+        <p class="success-text">Maintenance notification sent successfully!</p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+  <!-- Register Clinic Modal -->
+  <div *ngIf="showRegisterModal" class="modal-overlay" (click)="showRegisterModal = false">
+    <div class="modal-box glass-card register-modal" (click)="$event.stopPropagation()">
+
+      <div *ngIf="!registerSuccess">
+        <h3 class="modal-title">Register New Clinic</h3>
+        <p class="modal-sub">Create a clinic account and assign a subscription plan.</p>
+
+        <form [formGroup]="registerForm" (ngSubmit)="submitRegister()" class="reg-form">
+
+          <div class="form-row">
+            <div class="form-field" [class.field-error]="rf['clinicName'].invalid && rf['clinicName'].touched">
+              <label>Clinic Name <span class="req">*</span></label>
+              <input type="text" formControlName="clinicName" placeholder="e.g. SmileCare Dental" />
+              <span class="error-msg" *ngIf="rf['clinicName'].errors?.['required'] && rf['clinicName'].touched">Required</span>
+            </div>
+            <div class="form-field" [class.field-error]="rf['ownerName'].invalid && rf['ownerName'].touched">
+              <label>Owner / Admin Name <span class="req">*</span></label>
+              <input type="text" formControlName="ownerName" placeholder="Dr. Full Name" />
+              <span class="error-msg" *ngIf="rf['ownerName'].errors?.['required'] && rf['ownerName'].touched">Required</span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field" [class.field-error]="rf['email'].invalid && rf['email'].touched">
+              <label>Email <span class="req">*</span></label>
+              <input type="email" formControlName="email" placeholder="admin@clinic.com" />
+              <span class="error-msg" *ngIf="rf['email'].errors?.['email'] && rf['email'].touched">Invalid email</span>
+            </div>
+            <div class="form-field" [class.field-error]="rf['phone'].invalid && rf['phone'].touched">
+              <label>Phone <span class="req">*</span></label>
+              <input type="tel" formControlName="phone" placeholder="10-digit mobile" maxlength="10" />
+              <span class="error-msg" *ngIf="rf['phone'].errors?.['pattern'] && rf['phone'].touched">Invalid number</span>
+            </div>
+          </div>
+
+          <div class="form-field full-width" [class.field-error]="rf['address'].invalid && rf['address'].touched">
+            <label>Address <span class="req">*</span></label>
+            <input type="text" formControlName="address" placeholder="Clinic address" />
+            <span class="error-msg" *ngIf="rf['address'].errors?.['required'] && rf['address'].touched">Required</span>
+          </div>
+
+          <div class="form-row">
+            <div class="form-field" [class.field-error]="rf['plan'].invalid && rf['plan'].touched">
+              <label>Subscription Plan <span class="req">*</span></label>
+              <select formControlName="plan">
+                <option value="" disabled>Select a plan</option>
+                <option *ngFor="let p of plans" [value]="p.name">{{ p.name }} — ₹{{ p.price }}/{{ p.billingCycle }}</option>
+              </select>
+              <span class="error-msg" *ngIf="rf['plan'].errors?.['required'] && rf['plan'].touched">Required</span>
+            </div>
+            <div class="form-field" [class.field-error]="rf['password'].invalid && rf['password'].touched">
+              <label>Initial Password <span class="req">*</span></label>
+              <div class="input-pw-wrap">
+                <input [type]="showRegisterPassword ? 'text' : 'password'" formControlName="password" placeholder="Min. 8 characters" />
+                <button type="button" class="toggle-pw-btn" (click)="showRegisterPassword = !showRegisterPassword" aria-label="Toggle password">
+                  <svg *ngIf="!showRegisterPassword" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg *ngIf="showRegisterPassword" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                </button>
+              </div>
+              <span class="error-msg" *ngIf="rf['password'].errors?.['minlength'] && rf['password'].touched">Min. 8 characters</span>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="submit" class="btn-primary" [disabled]="isRegistering">
+              <span *ngIf="!isRegistering">Register Clinic</span>
+              <span *ngIf="isRegistering">Registering…</span>
+            </button>
+            <button type="button" class="btn-ghost" (click)="showRegisterModal = false">Cancel</button>
+          </div>
+
+        </form>
+      </div>
+
+      <div *ngIf="registerSuccess" class="maint-success">
+        <span class="success-icon">✅</span>
+        <p class="success-text">Clinic registered successfully!</p>
+      </div>
+
+    </div>
+  </div>

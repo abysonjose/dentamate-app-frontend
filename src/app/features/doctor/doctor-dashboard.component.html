@@ -1,0 +1,315 @@
+<div class="dm-shell" [class.dark]="theme === 'dark'" [class.light]="theme === 'light'">
+
+  <!-- Mobile overlay -->
+  <div *ngIf="mobileMenuOpen"
+       class="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden"
+       (click)="mobileMenuOpen = false"></div>
+
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="dm-sidebar" [class.open]="sidebarOpen || mobileMenuOpen" [@sidebarSlide]>
+
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="url(#dsg)"/>
+          <path d="M13 14c0-3.866 3.134-7 7-7s7 3.134 7 7c0 2.5-1.3 4.7-3.25 6L20 28l-3.75-8C14.3 18.7 13 16.5 13 14z" fill="white" opacity="0.9"/>
+          <defs>
+            <linearGradient id="dsg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#0d9488"/><stop offset="1" stop-color="#1d4ed8"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div>
+        <span class="logo-text">DentaMate</span>
+        <span class="role-badge">Doctor</span>
+      </div>
+    </div>
+
+    <!-- Doctor card -->
+    <div class="patient-card">
+      <div class="patient-avatar">
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Doctor photo" class="avatar-img" />
+        <span *ngIf="!avatarUrl">{{ initials }}</span>
+      </div>
+      <div class="patient-info">
+        <p class="patient-name">{{ doctorName }}</p>
+        <p class="patient-id">{{ doctorId }}</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Doctor navigation">
+      <button *ngFor="let item of navItems"
+              class="nav-item"
+              [class.active]="activeSection === item.id"
+              (click)="navigate(item.id)"
+              [attr.aria-current]="activeSection === item.id ? 'page' : null">
+        <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
+        <span class="nav-label">{{ item.label }}</span>
+        <span *ngIf="item.badge" class="nav-badge">{{ item.badge }}</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item text-red-400 hover:text-red-300" aria-label="Sign out">
+        <span class="nav-icon" [innerHTML]="getIcon('log-out')"></span>
+        <span class="nav-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN ══ -->
+  <div class="dm-main">
+
+    <header class="dm-header">
+      <button class="menu-btn lg:hidden" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Toggle menu">
+        <span [innerHTML]="getIcon('menu')"></span>
+      </button>
+      <div class="header-title">
+        <h1>{{ getSectionTitle() }}</h1>
+        <p class="header-date">{{ today }}</p>
+      </div>
+
+      <div class="header-actions">
+
+        <!-- Theme toggle -->
+        <button class="icon-btn" (click)="themeService.toggle()"
+                [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+                [title]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+          <svg *ngIf="theme === 'dark'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg *ngIf="theme === 'light'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+          </svg>
+        </button>
+
+        <!-- Notifications -->
+        <button class="icon-btn notif-btn" aria-label="Notifications" title="Notifications"
+                (click)="navigate('notifications')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+        </button>
+
+        <!-- Avatar + dropdown -->
+        <div class="header-avatar-wrap">
+          <button class="header-avatar" (click)="toggleProfileMenu()" aria-label="Profile menu"
+                  [attr.aria-expanded]="profileMenuOpen">
+            <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Profile" class="avatar-img" />
+            <span *ngIf="!avatarUrl">{{ initials }}</span>
+          </button>
+
+          <div *ngIf="profileMenuOpen" class="profile-dropdown" role="menu">
+            <div class="profile-dropdown-header">
+              <div class="pd-avatar">
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Profile" class="avatar-img" />
+                <span *ngIf="!avatarUrl">{{ initials }}</span>
+              </div>
+              <div>
+                <p class="pd-name">{{ doctorName }}</p>
+                <p class="pd-id">{{ doctorId }}</p>
+              </div>
+            </div>
+            <div class="profile-dropdown-divider"></div>
+            <button class="pd-item" role="menuitem" (click)="navigate('profile')">
+              <span [innerHTML]="getIcon('user')"></span> My Profile
+            </button>
+            <button class="pd-item pd-signout" role="menuitem">
+              <span [innerHTML]="getIcon('log-out')"></span> Sign Out
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </header>
+
+    <main class="dm-content" [@contentFade]="activeSection">
+      <ng-container [ngSwitch]="activeSection">
+
+        <div *ngSwitchCase="'queue'"         class="page-enter"><app-doc-live-queue></app-doc-live-queue></div>
+        <div *ngSwitchCase="'clinical'"      class="page-enter"><app-doc-clinical></app-doc-clinical></div>
+        <div *ngSwitchCase="'dental3d'"      class="page-enter"><app-doc-dental-chart></app-doc-dental-chart></div>
+        <div *ngSwitchCase="'ai'"            class="page-enter"><app-doc-ai-panel></app-doc-ai-panel></div>
+        <div *ngSwitchCase="'ar-smile'"      class="page-enter"><app-doc-ar-smile></app-doc-ar-smile></div>
+        <div *ngSwitchCase="'chat'"          class="page-enter"><app-doc-staff-chat></app-doc-staff-chat></div>
+        <div *ngSwitchCase="'notifications'" class="page-enter"><app-doc-notifications></app-doc-notifications></div>
+
+        <div *ngSwitchCase="'settings'" class="page-enter"><app-doc-settings></app-doc-settings></div>
+
+        <!-- ── PROFILE ── -->
+        <div *ngSwitchCase="'profile'" class="page-enter">
+          <div class="profile-page">
+
+            <!-- Cover + Avatar -->
+            <div class="profile-cover glass-card">
+              <div class="cover-gradient"></div>
+              <div class="profile-identity">
+                <div class="profile-avatar-wrap">
+                  <div class="profile-avatar-lg">
+                    <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Profile photo" class="avatar-img" />
+                    <span *ngIf="!avatarUrl">{{ initials }}</span>
+                  </div>
+                  <label class="avatar-edit-btn" for="docPhoto" aria-label="Change photo" title="Change photo">
+                    <span [innerHTML]="getIcon('camera')"></span>
+                  </label>
+                  <input id="docPhoto" type="file" accept="image/*" class="sr-only" (change)="onPhotoChange($event)" />
+                </div>
+                <div class="profile-identity-info">
+                  <h2 class="profile-name">{{ doctorName }}</h2>
+                  <p class="profile-role-tag">
+                    <span class="role-pill">Doctor</span>
+                    {{ department }}
+                  </p>
+                  <p class="profile-reg">Reg. {{ doctorReg }}</p>
+                </div>
+              </div>
+
+              <!-- Stats bar -->
+              <div class="profile-stats">
+                <div class="pstat">
+                  <span class="pstat-val">142</span>
+                  <span class="pstat-lbl">Patients Seen</span>
+                </div>
+                <div class="pstat-divider"></div>
+                <div class="pstat">
+                  <span class="pstat-val">98%</span>
+                  <span class="pstat-lbl">Satisfaction</span>
+                </div>
+                <div class="pstat-divider"></div>
+                <div class="pstat">
+                  <span class="pstat-val">7 yrs</span>
+                  <span class="pstat-lbl">Experience</span>
+                </div>
+                <div class="pstat-divider"></div>
+                <div class="pstat">
+                  <span class="pstat-val">{{ department }}</span>
+                  <span class="pstat-lbl">Department</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fields grid -->
+            <div class="profile-grid">
+
+              <!-- Left: Identity (non-editable) -->
+              <div class="profile-card glass-card">
+                <div class="pcard-header">
+                  <span [innerHTML]="getIcon('user')"></span>
+                  <h3>Identity</h3>
+                  <span class="pcard-badge locked">🔒 System Managed</span>
+                </div>
+                <div class="pcard-fields">
+                  <div class="pf-row">
+                    <span class="pf-label">User ID</span>
+                    <span class="pf-value pf-id">{{ doctorId }}</span>
+                  </div>
+                  <div class="pf-row">
+                    <span class="pf-label">Registration No.</span>
+                    <span class="pf-value pf-id">{{ doctorReg }}</span>
+                  </div>
+                  <div class="pf-row">
+                    <span class="pf-label">Department</span>
+                    <span class="pf-value">{{ department }}</span>
+                  </div>
+                  <div class="pf-row">
+                    <span class="pf-label">Qualifications</span>
+                    <span class="pf-value">{{ doctorQualifications }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Contact (editable) -->
+              <div class="profile-card glass-card">
+                <div class="pcard-header">
+                  <span [innerHTML]="getIcon('edit')"></span>
+                  <h3>Contact Info</h3>
+                  <button *ngIf="!editingContact" class="pcard-edit-btn" (click)="startEditContact()">
+                    <span [innerHTML]="getIcon('edit')"></span> Edit
+                  </button>
+                </div>
+
+                <div class="pcard-fields" *ngIf="!editingContact">
+                  <div class="pf-row">
+                    <span class="pf-label">Display Name</span>
+                    <span class="pf-value">{{ doctorName }}</span>
+                  </div>
+                  <div class="pf-row">
+                    <span class="pf-label">Email</span>
+                    <span class="pf-value">{{ doctorEmail }}</span>
+                  </div>
+                  <div class="pf-row">
+                    <span class="pf-label">Phone</span>
+                    <span class="pf-value">{{ doctorPhone }}</span>
+                  </div>
+                </div>
+
+                <div class="pcard-edit-form" *ngIf="editingContact">
+                  <div class="form-field">
+                    <label for="docName">Display Name</label>
+                    <input id="docName" type="text" [(ngModel)]="editName" placeholder="Dr. Full Name" />
+                  </div>
+                  <div class="form-field">
+                    <label for="docEmail">Email</label>
+                    <input id="docEmail" type="email" [(ngModel)]="editEmail" placeholder="[email protected]" />
+                  </div>
+                  <div class="form-field">
+                    <label for="docPhone">Phone</label>
+                    <input id="docPhone" type="tel" [(ngModel)]="editPhone" placeholder="+1 512-555-0000" />
+                  </div>
+                  <div class="pf-actions">
+                    <button class="btn-primary" (click)="saveContact()">
+                      <span [innerHTML]="getIcon('check')"></span> Save Changes
+                    </button>
+                    <button class="btn-ghost" (click)="cancelEdit()">Cancel</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Full-width: Qualifications & About -->
+              <div class="profile-card glass-card profile-card--full">
+                <div class="pcard-header">
+                  <span [innerHTML]="getIcon('ai')"></span>
+                  <h3>Professional Details</h3>
+                </div>
+                <div class="prof-details-grid">
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Specialisation</span>
+                    <span class="prof-detail-val">{{ department }}</span>
+                  </div>
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Qualifications</span>
+                    <span class="prof-detail-val">{{ doctorQualifications }}</span>
+                  </div>
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Clinic</span>
+                    <span class="prof-detail-val">DentaMate Clinic</span>
+                  </div>
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Joined</span>
+                    <span class="prof-detail-val">March 2019</span>
+                  </div>
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Working Days</span>
+                    <span class="prof-detail-val">Mon – Sat</span>
+                  </div>
+                  <div class="prof-detail-item">
+                    <span class="prof-detail-label">Consultation Hours</span>
+                    <span class="prof-detail-val">9:00 AM – 5:00 PM</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
+    </main>
+  </div>
+</div>

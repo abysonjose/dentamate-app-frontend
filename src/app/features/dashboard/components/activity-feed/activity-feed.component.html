@@ -1,0 +1,21 @@
+<div class="glass-card feed-card">
+  <div class="card-header">
+    <h3>Activity Feed</h3>
+    <span class="badge-count" *ngIf="!loading">{{ items.length }} updates</span>
+  </div>
+
+  <ng-container *ngIf="loading">
+    <div *ngFor="let i of [1,2,3]" class="skeleton" style="height:52px;margin-bottom:8px;border-radius:10px"></div>
+  </ng-container>
+
+  <div [@feedAnim]="displayed.length" *ngIf="!loading">
+    <div class="feed-item" *ngFor="let item of displayed">
+      <div class="feed-dot" [style.background]="typeColor(item.type)"></div>
+      <div class="feed-icon">{{ item.icon }}</div>
+      <div class="feed-content">
+        <p class="feed-msg">{{ item.message }}</p>
+        <span class="feed-time">{{ item.time }}</span>
+      </div>
+    </div>
+  </div>
+</div>

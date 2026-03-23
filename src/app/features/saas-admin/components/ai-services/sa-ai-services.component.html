@@ -1,0 +1,53 @@
+<div class="ai-wrap">
+
+  <div class="ai-header-row">
+    <div class="kpi-card glass-card">
+      <p class="kpi-label">Total AI Credits Used</p>
+      <p class="kpi-value purple">{{ totalCredits.toLocaleString() }}</p>
+      <p class="kpi-sub">Across all clinics · Mar 2026</p>
+    </div>
+    <div class="kpi-card glass-card">
+      <p class="kpi-label">Active AI Clinics</p>
+      <p class="kpi-value blue">{{ clinicUsage.length }}</p>
+      <p class="kpi-sub">Using AI services</p>
+    </div>
+  </div>
+
+  <!-- Period Chart -->
+  <div class="chart-card glass-card">
+    <div class="chart-header">
+      <span class="chart-title">AI Credit Usage — Period Trend</span>
+    </div>
+    <canvas #periodCanvas class="period-canvas"></canvas>
+  </div>
+
+  <!-- Per-Clinic Usage -->
+  <div class="clinic-usage-list glass-card">
+    <div class="list-header">
+      <span>Clinic</span>
+      <span>Credits Used / Limit</span>
+      <span>Usage</span>
+    </div>
+    <div *ngFor="let u of clinicUsage" class="usage-row">
+      <div class="usage-clinic">
+        <div class="usage-avatar">{{ u.clinicName.charAt(0) }}</div>
+        <div>
+          <p class="usage-name">{{ u.clinicName }}</p>
+          <p class="usage-id">{{ u.clinicId }}</p>
+        </div>
+      </div>
+      <div class="usage-credits">
+        <span class="credits-used" [style.color]="getUsageColor(getUsagePct(u))">{{ u.credits.toLocaleString() }}</span>
+        <span class="credits-sep">/</span>
+        <span class="credits-limit">{{ u.limit.toLocaleString() }}</span>
+      </div>
+      <div class="usage-bar-wrap">
+        <div class="usage-bar-track">
+          <div class="usage-bar-fill" [style.width.%]="getUsagePct(u)" [style.background]="getUsageColor(getUsagePct(u))"></div>
+        </div>
+        <span class="usage-pct" [style.color]="getUsageColor(getUsagePct(u))">{{ getUsagePct(u).toFixed(0) }}%</span>
+      </div>
+    </div>
+  </div>
+
+</div>

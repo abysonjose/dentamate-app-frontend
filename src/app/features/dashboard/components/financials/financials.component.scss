@@ -1,0 +1,61 @@
+.fin-card { padding: 1.25rem; }
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+  h3 { font-size: 0.95rem; font-weight: 700; color: var(--text-1); }
+}
+
+.outstanding-badge {
+  display: flex; flex-direction: column; align-items: flex-end;
+  span  { font-size: 0.68rem; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em; }
+  strong { font-size: 1.1rem; font-weight: 700; color: #f87171; }
+}
+
+.bill-row {
+  display: flex; align-items: center; gap: 0.75rem;
+  padding: 0.75rem; border-radius: 10px; margin-bottom: 4px;
+  border: 1px solid var(--border-card); transition: background 0.15s;
+  &:hover { background: var(--accent-dim); }
+  &.paid { opacity: 0.6; }
+}
+
+.bill-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+.bill-info {
+  flex: 1; min-width: 0;
+  .bill-desc { font-size: 0.88rem; font-weight: 600; color: var(--text-1); }
+  .bill-due  { font-size: 0.75rem; color: var(--text-3); margin-top: 2px; }
+}
+
+.bill-right {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 0.3rem;
+}
+
+.bill-amount {
+  font-size: 1rem; font-weight: 700; color: #f87171;
+  &.paid-amount { color: var(--text-3); text-decoration: line-through; }
+}
+
+.pay-btn {
+  padding: 0.3rem 0.75rem; border-radius: 7px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #0d9488, #1d4ed8);
+  color: white; font-size: 0.75rem; font-weight: 600; font-family: inherit;
+  transition: opacity 0.2s;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &:not(:disabled):hover { opacity: 0.85; }
+}
+
+.paid-label {
+  font-size: 0.72rem; font-weight: 600; color: #4ade80;
+  background: rgba(74,222,128,0.12); padding: 2px 8px; border-radius: 99px;
+}
+
+.fin-footer { margin-top: 1rem; }
+
+.btn-pay-all {
+  width: 100%; padding: 0.7rem; border-radius: 10px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, rgba(248,113,113,0.15), rgba(248,113,113,0.05));
+  border: 1px solid rgba(248,113,113,0.3); color: #f87171;
+  font-size: 0.88rem; font-weight: 600; font-family: inherit; transition: all 0.2s;
+  &:hover { background: rgba(248,113,113,0.2); }
+}

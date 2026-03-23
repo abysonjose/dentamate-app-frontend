@@ -1,0 +1,99 @@
+<div class="chart-page">
+
+  <div class="chart-layout">
+
+    <!-- ── 3D Canvas ── -->
+    <div class="canvas-wrap glass-card" #container>
+      <div class="canvas-header">
+        <h2 class="canvas-title">Interactive 3D Dental Chart</h2>
+        <p class="canvas-sub">Click a tooth to select · Hover to inspect</p>
+      </div>
+      <canvas #dentalCanvas class="dental-canvas"></canvas>
+
+      <!-- Hover tooltip -->
+      <div class="tooth-tooltip" *ngIf="hoveredTooth && !selectedTooth" [@fadeIn]>
+        <span class="tt-num">{{ hoveredTooth.number }}</span>
+        <span class="tt-name">{{ hoveredTooth.name }}</span>
+        <span class="tt-cond" [style.color]="conditionHex(hoveredTooth.condition)">{{ conditionLabel(hoveredTooth.condition) }}</span>
+      </div>
+
+      <!-- Legend -->
+      <div class="chart-legend">
+        <div class="legend-item" *ngFor="let c of conditions">
+          <span class="legend-dot" [style.background]="conditionHex(c)"></span>
+          <span>{{ conditionLabel(c) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Side Panel ── -->
+    <div class="chart-side">
+
+      <!-- Tooth Editor -->
+      <div class="tooth-editor glass-card" *ngIf="selectedTooth" [@fadeIn]>
+        <div class="te-header">
+          <div class="te-num">{{ selectedTooth.number }}</div>
+          <div>
+            <p class="te-name">{{ selectedTooth.name }}</p>
+            <p class="te-cond" [style.color]="conditionHex(selectedTooth.condition)">{{ conditionLabel(selectedTooth.condition) }}</p>
+          </div>
+          <button class="te-close" (click)="selectedTooth = null">✕</button>
+        </div>
+        <div class="te-body">
+          <div class="form-field">
+            <label>Condition</label>
+            <select [(ngModel)]="conditionInput" class="te-select">
+              <option *ngFor="let c of conditions" [value]="c">{{ conditionLabel(c) }}</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Clinical Notes</label>
+            <textarea [(ngModel)]="noteInput" rows="3" placeholder="e.g. Occlusal caries, RCT needed..."></textarea>
+          </div>
+          <button class="btn-primary" (click)="saveToothNote()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Save
+          </button>
+        </div>
+      </div>
+
+      <!-- No selection -->
+      <div class="no-selection glass-card" *ngIf="!selectedTooth">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+          <path d="M12 2C8.5 2 6 4.5 6 7c0 2 1 3.5 2 5l1 7c.2 1 .8 1.5 1.5 1.5h3c.7 0 1.3-.5 1.5-1.5l1-7c1-1.5 2-3 2-5 0-2.5-2.5-5-6-5z"/>
+        </svg>
+        <p>Click a tooth in the 3D chart to view or edit its condition</p>
+      </div>
+
+      <!-- Selected teeth summary -->
+      <div class="selected-summary glass-card" *ngIf="selectedTeeth.length">
+        <p class="ss-title">Treatment Selection ({{ selectedTeeth.length }})</p>
+        <div class="ss-list">
+          <div class="ss-item" *ngFor="let t of selectedTeeth">
+            <span class="ss-num">{{ t.number }}</span>
+            <span class="ss-name">{{ t.name }}</span>
+            <span class="ss-cond" [style.color]="conditionHex(t.condition)">{{ conditionLabel(t.condition) }}</span>
+          </div>
+        </div>
+        <button class="btn-primary mt-2">Add to Treatment Plan</button>
+      </div>
+
+      <!-- Tooth grid (2D reference) -->
+      <div class="tooth-grid-card glass-card">
+        <p class="tg-title">Quick Reference</p>
+        <div class="tooth-grid">
+          <div *ngFor="let t of teeth"
+               class="tg-tooth"
+               [class.selected]="t.selected"
+               [style.background]="conditionHex(t.condition) + '33'"
+               [style.border-color]="t.selected ? 'var(--accent)' : conditionHex(t.condition) + '66'"
+               (click)="toggleSelect(t)"
+               [title]="t.number + ' · ' + t.name">
+            <span class="tg-num">{{ t.number }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

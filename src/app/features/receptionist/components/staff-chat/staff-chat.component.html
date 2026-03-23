@@ -1,0 +1,61 @@
+<div class="chat-layout glass-card">
+
+  <!-- Contact List -->
+  <div class="contact-list">
+    <div class="contact-header">💬 Staff Chat</div>
+    <div *ngFor="let c of contacts"
+         class="contact-row"
+         [class.active]="activeContact?.id === c.id"
+         (click)="selectContact(c)">
+      <div class="contact-avatar" [style.background]="'linear-gradient(135deg,' + roleColor(c.role) + ',#1d4ed8)'">
+        {{ c.avatar }}
+      </div>
+      <div class="contact-info">
+        <div class="contact-name-row">
+          <span class="contact-name">{{ c.name }}</span>
+          <span class="online-dot" *ngIf="c.online"></span>
+        </div>
+        <p class="contact-last">{{ c.lastMessage }}</p>
+      </div>
+      <span *ngIf="c.unread > 0" class="unread-badge">{{ c.unread }}</span>
+    </div>
+  </div>
+
+  <!-- Chat Window -->
+  <div class="chat-window" *ngIf="activeContact; else noChat">
+    <div class="chat-header">
+      <div class="chat-avatar" [style.background]="'linear-gradient(135deg,' + roleColor(activeContact.role) + ',#1d4ed8)'">
+        {{ activeContact.avatar }}
+      </div>
+      <div>
+        <p class="chat-name">{{ activeContact.name }}</p>
+        <p class="chat-role">{{ roleIcon(activeContact.role) }} {{ activeContact.role | titlecase }}
+          <span class="online-text" *ngIf="activeContact.online"> · Online</span>
+          <span class="offline-text" *ngIf="!activeContact.online"> · Offline</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="msg-list" #msgList>
+      <div *ngFor="let m of messages" class="msg-bubble" [class.from-me]="m.fromMe" [class.from-them]="!m.fromMe">
+        <span class="msg-text">{{ m.text }}</span>
+        <span class="msg-time">{{ m.time }}</span>
+      </div>
+    </div>
+
+    <div class="chat-input-row">
+      <input type="text" [(ngModel)]="newMessage" (keydown)="onKeydown($event)"
+             placeholder="Type a message..." class="chat-input" />
+      <button class="send-btn" (click)="sendMessage()" [disabled]="!newMessage.trim()" aria-label="Send">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <ng-template #noChat>
+    <div class="no-chat">Select a contact to start chatting</div>
+  </ng-template>
+
+</div>

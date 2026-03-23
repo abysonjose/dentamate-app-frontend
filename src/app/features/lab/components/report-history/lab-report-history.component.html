@@ -1,0 +1,71 @@
+<div class="glass-card lookup-card">
+  <h3 class="section-title">Lab Report History</h3>
+  <p class="section-sub">Enter a Patient User ID to view all historical lab reports.</p>
+  <div class="lookup-row">
+    <div class="lookup-input-wrap">
+      <span class="lookup-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input class="lookup-input" type="text" [(ngModel)]="searchId"
+             placeholder="e.g. DM-20483"
+             (keydown.enter)="search()"
+             aria-label="Patient User ID" />
+    </div>
+    <button class="btn-primary" (click)="search()" [disabled]="loading">
+      <span *ngIf="loading" class="spinner"></span>
+      <span *ngIf="!loading">Search</span>
+    </button>
+    <button *ngIf="reports.length" class="btn-outline" (click)="print()">🖨️ Print</button>
+  </div>
+</div>
+
+<!-- Results -->
+<ng-container *ngIf="searched">
+
+  <div *ngIf="reports.length === 0" class="glass-card empty-state">
+    <div class="empty-icon">📂</div>
+    <p class="empty-title">No reports found</p>
+    <p class="empty-sub">No lab reports found for "{{ searchId }}".</p>
+  </div>
+
+  <ng-container *ngIf="reports.length > 0">
+    <div class="patient-banner glass-card">
+      <span class="banner-avatar">{{ getInitials(patientName) }}</span>
+      <div>
+        <p class="banner-name">{{ patientName }}</p>
+        <p class="banner-id">{{ searchId.toUpperCase() }} · {{ reports.length }} report(s) found</p>
+      </div>
+    </div>
+
+    <div *ngFor="let group of groupByDate()" class="date-group" [@listAnim]="group.reports.length">
+      <div class="date-label">
+        <span class="date-line"></span>
+        <span class="date-text">{{ formatDate(group.date) }}</span>
+        <span class="date-line"></span>
+      </div>
+
+      <div class="report-card glass-card" *ngFor="let r of group.reports">
+        <div class="report-icon">🔬</div>
+        <div class="report-info">
+          <p class="report-name">{{ r.testName }}</p>
+          <p class="report-meta">{{ r.testCode }} · Uploaded {{ r.uploadedAt }}</p>
+          <p class="report-meta">Doctor: {{ r.doctor }}</p>
+        </div>
+        <div class="report-file">
+          <span class="file-chip">📎 {{ r.fileName }}</span>
+        </div>
+        <div class="report-actions">
+          <span class="status-done">✅ Completed</span>
+          <button class="btn-sm btn-view" (click)="print()" title="Print report">🖨️ Print</button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</ng-container>
+
+<div *ngIf="!searched && !loading" class="glass-card empty-state">
+  <div class="empty-icon">📋</div>
+  <p class="empty-title">Search for a patient</p>
+  <p class="empty-sub">Enter a Patient User ID to view their complete lab report history.</p>
+</div>

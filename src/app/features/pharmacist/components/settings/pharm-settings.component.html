@@ -1,0 +1,244 @@
+﻿<div class="settings-wrap" [class.dark]="theme === 'dark'" [class.light]="theme === 'light'">
+
+  <div class="settings-header">
+    <h2 class="settings-title">Settings</h2>
+    <p class="settings-sub">Manage your account security and preferences</p>
+  </div>
+
+  <div class="tab-bar" role="tablist" aria-label="Settings sections">
+    <button *ngFor="let tab of tabs" class="tab-btn"
+            [class.active]="activeTab === tab.id"
+            (click)="setTab(tab.id)"
+            role="tab"
+            [attr.aria-selected]="activeTab === tab.id"
+            [attr.aria-controls]="'panel-' + tab.id">
+      <span class="tab-icon" [innerHTML]="getIcon(tab.icon)"></span>
+      <span>{{ tab.label }}</span>
+    </button>
+  </div>
+
+  <div class="tab-panels">
+
+    <!-- SECURITY -->
+    <div *ngIf="activeTab === 'security'" [@tabContent] class="tab-panel" id="panel-security" role="tabpanel">
+      <div class="settings-section" [@stagger]="'in'">
+
+        <div class="section-block">
+          <div class="section-block-header">
+            <span [innerHTML]="getIcon('lock')"></span>
+            <div>
+              <p class="block-title">Change Password</p>
+              <p class="field-hint">A 6-digit OTP will be sent to your registered email</p>
+            </div>
+          </div>
+
+          <div *ngIf="otpStep === 'idle'" class="otp-idle">
+            <button class="btn-primary" (click)="requestOtp()">Request OTP via Email</button>
+          </div>
+
+          <div *ngIf="otpStep === 'sent'" class="otp-form" [@tabContent]>
+            <p class="otp-info">A 6-digit code was sent to your email. Expires in {{ otpCountdown }}s.</p>
+            <form [formGroup]="otpForm" (ngSubmit)="verifyOtp()">
+              <div class="field-group">
+                <label class="field-label" for="pharmOtpCode">Enter OTP</label>
+                <input id="pharmOtpCode" class="dm-input otp-input" formControlName="otp"
+                       type="text" inputmode="numeric" maxlength="6"
+                       placeholder="_ _ _ _ _ _" autocomplete="one-time-code" />
+                <p *ngIf="otpForm.get('otp')?.invalid && otpForm.get('otp')?.touched" class="field-error">
+                  Enter the 6-digit code
+                </p>
+              </div>
+              <div class="btn-row">
+                <button type="submit" class="btn-primary" [disabled]="otpForm.invalid">Verify OTP</button>
+                <button type="button" class="btn-ghost" (click)="cancelOtp()">Cancel</button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="otpStep === 'new'" class="otp-form" [@tabContent]>
+            <form [formGroup]="passwordForm" (ngSubmit)="savePassword()">
+              <div class="field-group">
+                <label class="field-label" for="pharmNewPw">New Password</label>
+                <input id="pharmNewPw" class="dm-input" formControlName="newPassword"
+                       type="password" placeholder="Min. 8 characters" autocomplete="new-password" />
+              </div>
+              <div class="field-group">
+                <label class="field-label" for="pharmConfirmPw">Confirm Password</label>
+                <input id="pharmConfirmPw" class="dm-input" formControlName="confirmPassword"
+                       type="password" placeholder="Repeat new password" autocomplete="new-password" />
+                <p *ngIf="passwordForm.errors?.['mismatch'] && passwordForm.get('confirmPassword')?.touched"
+                   class="field-error">Passwords do not match</p>
+              </div>
+              <div class="btn-row">
+                <button type="submit" class="btn-primary" [disabled]="passwordForm.invalid">Update Password</button>
+                <button type="button" class="btn-ghost" (click)="cancelOtp()">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="section-block">
+          <div class="section-block-header">
+            <span [innerHTML]="getIcon('monitor')"></span>
+            <div>
+              <p class="block-title">Active Sessions &amp; Sign-in History</p>
+              <p class="field-hint">Devices that have accessed your account</p>
+            </div>
+          </div>
+          <div class="sessions-list">
+            <div *ngFor="let s of sessions" class="session-item" [class.current]="s.current">
+              <div class="session-dot" [class.active]="s.current"></div>
+              <div class="session-info">
+                <p class="session-device">
+                  {{ s.device }}
+                  <span *ngIf="s.current" class="session-badge">Current</span>
+                </p>
+                <p class="session-meta">{{ s.location }} · Sign-in: {{ formatDate(s.signIn) }}</p>
+                <p *ngIf="s.signOut"  class="session-meta">Sign-out: {{ formatDate(s.signOut!) }}</p>
+                <p *ngIf="!s.signOut" class="session-meta active-text">Active now</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- PREFERENCES -->
+    <div *ngIf="activeTab === 'preferences'" [@tabContent] class="tab-panel" id="panel-preferences" role="tabpanel">
+      <div class="settings-section" [@stagger]="'in'">
+
+        <div class="pref-row">
+          <div class="pref-info">
+            <p class="block-title">Dark Mode</p>
+            <p class="field-hint">Switch between dark and light interface</p>
+          </div>
+          <button class="toggle-btn" [class.on]="theme === 'dark'"
+                  (click)="themeService.toggle()"
+                  role="switch" [attr.aria-checked]="theme === 'dark'" aria-label="Toggle dark mode">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="pref-row pref-col">
+          <div class="pref-info">
+            <p class="block-title">UI Accent Color</p>
+            <p class="field-hint">Customize the primary color used across the interface</p>
+          </div>
+          <div class="accent-swatches">
+            <button *ngFor="let opt of accentOptions" class="swatch"
+                    [class.selected]="accentColor === opt.value"
+                    [style.background]="opt.color"
+                    (click)="setAccent(opt.value)"
+                    [attr.aria-label]="opt.label + ' accent'"
+                    [attr.aria-pressed]="accentColor === opt.value">
+              <span *ngIf="accentColor === opt.value" class="swatch-check" [innerHTML]="getIcon('check')"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pref-row">
+          <div class="pref-info">
+            <p class="block-title">Notification Sounds</p>
+            <p class="field-hint">Play a chime when you receive a notification</p>
+          </div>
+          <button class="toggle-btn" [class.on]="soundService.notificationSoundEnabled"
+                  (click)="soundService.toggleNotification()"
+                  role="switch" [attr.aria-checked]="soundService.notificationSoundEnabled"
+                  aria-label="Toggle notification sounds">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="pref-row">
+          <div class="pref-info">
+            <p class="block-title">Click &amp; UI Sounds</p>
+            <p class="field-hint">Play sounds for button clicks and UI interactions</p>
+          </div>
+          <button class="toggle-btn" [class.on]="soundService.clickSoundEnabled"
+                  (click)="soundService.toggleClick()"
+                  role="switch" [attr.aria-checked]="soundService.clickSoundEnabled"
+                  aria-label="Toggle click and UI sounds">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS -->
+    <div *ngIf="activeTab === 'notifications'" [@tabContent] class="tab-panel" id="panel-notifications" role="tabpanel">
+      <div class="settings-section" [@stagger]="'in'">
+
+        <p class="section-desc">Choose which push notifications you receive</p>
+
+        <div class="notif-row">
+          <div class="pref-info">
+            <p class="block-title">Medication Ready</p>
+            <p class="field-hint">Notified when a prescription is ready for dispensing</p>
+          </div>
+          <button class="toggle-btn" [class.on]="notifPrefs.medicationReady"
+                  (click)="notifPrefs.medicationReady = !notifPrefs.medicationReady"
+                  role="switch" [attr.aria-checked]="notifPrefs.medicationReady"
+                  aria-label="Medication ready notifications">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-row">
+          <div class="pref-info">
+            <p class="block-title">Low Stock Alert</p>
+            <p class="field-hint">Alerts when a medication falls below minimum stock level</p>
+          </div>
+          <button class="toggle-btn" [class.on]="notifPrefs.lowStock"
+                  (click)="notifPrefs.lowStock = !notifPrefs.lowStock"
+                  role="switch" [attr.aria-checked]="notifPrefs.lowStock"
+                  aria-label="Low stock notifications">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-row">
+          <div class="pref-info">
+            <p class="block-title">Expiry Alert</p>
+            <p class="field-hint">Notified when medications are approaching their expiry date</p>
+          </div>
+          <button class="toggle-btn" [class.on]="notifPrefs.expiryAlert"
+                  (click)="notifPrefs.expiryAlert = !notifPrefs.expiryAlert"
+                  role="switch" [attr.aria-checked]="notifPrefs.expiryAlert"
+                  aria-label="Expiry alert notifications">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-row">
+          <div class="pref-info">
+            <p class="block-title">New Prescription</p>
+            <p class="field-hint">Notified when a doctor submits a new prescription</p>
+          </div>
+          <button class="toggle-btn" [class.on]="notifPrefs.newPrescription"
+                  (click)="notifPrefs.newPrescription = !notifPrefs.newPrescription"
+                  role="switch" [attr.aria-checked]="notifPrefs.newPrescription"
+                  aria-label="New prescription notifications">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+        <div class="notif-row">
+          <div class="pref-info">
+            <p class="block-title">System Maintenance</p>
+            <p class="field-hint">Scheduled downtime and system update alerts</p>
+          </div>
+          <button class="toggle-btn" [class.on]="notifPrefs.systemMaintenance"
+                  (click)="notifPrefs.systemMaintenance = !notifPrefs.systemMaintenance"
+                  role="switch" [attr.aria-checked]="notifPrefs.systemMaintenance"
+                  aria-label="System maintenance notifications">
+            <span class="toggle-thumb"></span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

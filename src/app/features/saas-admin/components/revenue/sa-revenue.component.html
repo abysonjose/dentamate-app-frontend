@@ -1,0 +1,52 @@
+<div class="revenue-wrap">
+
+  <!-- Financial Widgets -->
+  <div class="fin-grid">
+    <div class="fin-card glass-card received">
+      <p class="fin-label">Total Received</p>
+      <p class="fin-value">₹{{ financial.receivedAmount.toLocaleString('en-IN') }}</p>
+      <p class="fin-sub">This year</p>
+    </div>
+    <div class="fin-card glass-card pending">
+      <p class="fin-label">Pending Amount</p>
+      <p class="fin-value">₹{{ financial.pendingAmount.toLocaleString('en-IN') }}</p>
+      <p class="fin-sub">Awaiting payment</p>
+    </div>
+    <div class="fin-card glass-card cost">
+      <p class="fin-label">Server Cost</p>
+      <p class="fin-value">₹{{ financial.serverCost.toLocaleString('en-IN') }}</p>
+      <p class="fin-sub">Monthly infrastructure</p>
+    </div>
+    <div class="fin-card glass-card profit">
+      <p class="fin-label">Net Profit</p>
+      <p class="fin-value">₹{{ netProfit.toLocaleString('en-IN') }}</p>
+      <p class="fin-sub">After server costs</p>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts-row">
+    <div class="chart-card glass-card wide">
+      <div class="chart-header">
+        <span class="chart-title">Revenue Over Time</span>
+        <span class="chart-period">2026</span>
+      </div>
+      <canvas #revCanvas class="rev-canvas"></canvas>
+    </div>
+    <div class="chart-card glass-card">
+      <div class="chart-header">
+        <span class="chart-title">Clinics by Plan</span>
+        <span class="chart-period">Current</span>
+      </div>
+      <canvas #planCanvas class="plan-canvas"></canvas>
+      <div class="plan-legend">
+        <div *ngFor="let p of plans" class="legend-item">
+          <span class="legend-dot" [style.background]="p.color"></span>
+          <span>{{ p.plan }}</span>
+          <span class="legend-count">{{ p.count }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,130 @@
+<div class="profile-wrap" [class.dark]="theme==='dark'" [class.light]="theme==='light'">
+
+  <!-- ── 3D Card Section ── -->
+  <section class="card-section" [@fadeUp]>
+    <div class="card-stage"
+         (mousemove)="onCardMouseMove($event)"
+         (mouseleave)="onCardMouseLeave()">
+      <canvas #cardCanvas class="card-canvas" (window:resize)="onResize()"></canvas>
+    </div>
+
+    <div class="card-controls">
+      <button class="ctrl-btn" (click)="flipCard()" aria-label="Flip card">
+        <span [innerHTML]="getIcon('flip')"></span>
+        Flip Card
+      </button>
+      <div class="rfid-badge">
+        <span [innerHTML]="getIcon('rfid')"></span>
+        RFID Enabled · Queue Check-in
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Profile Grid ── -->
+  <section class="profile-grid" [@fadeUp]>
+
+    <!-- Left: Identity card -->
+    <div class="identity-card glass-card">
+      <div class="id-avatar-wrap">
+        <div class="id-avatar">
+          <img *ngIf="profileService.avatar$ | async as av" [src]="av" alt="Patient photo" class="id-avatar-img" />
+          <span *ngIf="!(profileService.avatar$ | async)" class="id-avatar-initials">
+            {{ profileService.initials$ | async }}
+          </span>
+        </div>
+        <label class="id-avatar-edit" for="profilePhoto" aria-label="Change photo">
+          <span [innerHTML]="getIcon('camera')"></span>
+        </label>
+        <input id="profilePhoto" type="file" accept="image/*" class="sr-only" (change)="onFileChange($event)" />
+      </div>
+
+      <div class="id-name">{{ profileService.name$ | async }}</div>
+      <div class="id-role">Patient · DentaMate</div>
+
+      <div class="id-row">
+        <span class="id-label">User ID</span>
+        <div class="id-value-row">
+          <span class="id-value mono">{{ userId }}</span>
+          <button class="copy-btn" (click)="copyUserId()" [attr.aria-label]="idCopied ? 'Copied' : 'Copy User ID'">
+            <span [innerHTML]="getIcon(idCopied ? 'check' : 'copy')"></span>
+            <span>{{ idCopied ? 'Copied' : 'Copy' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="id-row">
+        <span class="id-label">Status</span>
+        <span class="status-badge">
+          <span class="status-dot"></span> Active
+        </span>
+      </div>
+
+      <div class="id-row">
+        <span class="id-label">Member Since</span>
+        <span class="id-value">Jan 2024</span>
+      </div>
+    </div>
+
+    <!-- Right: Edit form -->
+    <div class="form-card glass-card">
+      <h3 class="form-title">
+        <span [innerHTML]="getIcon('user')"></span>
+        Edit Profile
+      </h3>
+
+      <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="profile-form">
+
+        <div class="field-group">
+          <label class="field-label" for="pubName">Public Name</label>
+          <div class="input-readonly" id="pubName">{{ profileForm.get('publicName')?.value }}</div>
+          <p class="field-hint">Name can only be changed by the clinic admin</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="profEmail">Email Address</label>
+          <input id="profEmail" class="dm-input" formControlName="email"
+                 type="email" placeholder="[email protected]" autocomplete="email" />
+          <p *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+             class="field-error">Enter a valid email address</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="profPhone">Phone Number</label>
+          <input id="profPhone" class="dm-input" formControlName="phone"
+                 type="tel" placeholder="+234 800 000 0000" autocomplete="tel" />
+          <p *ngIf="profileForm.get('phone')?.invalid && profileForm.get('phone')?.touched"
+             class="field-error">Phone number is required</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="profEmergency">Emergency Contact</label>
+          <input id="profEmergency" class="dm-input" formControlName="emergency"
+                 type="tel" placeholder="+234 801 234 5678" autocomplete="tel" />
+          <p class="field-hint">Shown on the back of your virtual ID card</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="profPhoto">Profile Photo</label>
+          <label class="photo-upload-btn" for="profPhotoInput">
+            <span [innerHTML]="getIcon('camera')"></span>
+            {{ avatarDataUrl ? 'Change Photo' : 'Upload Photo' }}
+          </label>
+          <input id="profPhotoInput" type="file" accept="image/*" class="sr-only" (change)="onFileChange($event)" />
+          <p class="field-hint">Updates your 3D card texture in real-time · JPG, PNG, WebP</p>
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="btn-primary" [disabled]="profileForm.invalid">
+            Save Changes
+          </button>
+          <span *ngIf="saveSuccess" class="save-success">
+            <span [innerHTML]="getIcon('check')"></span> Saved
+          </span>
+        </div>
+
+      </form>
+    </div>
+
+  </section>
+
+</div>

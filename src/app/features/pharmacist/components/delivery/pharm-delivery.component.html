@@ -1,0 +1,89 @@
+﻿<div class="delivery-wrap">
+  <!-- Search Bar -->
+  <div class="search-card">
+    <div class="search-header">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="section-icon"><rect x="2" y="6" width="20" height="12" rx="6"/><line x1="12" y1="6" x2="12" y2="18"/></svg>
+      <div>
+        <h2 class="section-title">Patient Medication Lookup</h2>
+        <p class="section-sub">Enter Patient ID to retrieve digital prescription</p>
+      </div>
+    </div>
+    <div class="search-row">
+      <input class="search-input" [(ngModel)]="searchId" placeholder="e.g. PAT-00101"
+             (keyup.enter)="lookup()" aria-label="Patient ID search" />
+      <button class="btn-primary" (click)="lookup()" [disabled]="loading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        {{ loading ? "Searching..." : "Lookup" }}
+      </button>
+    </div>
+    <p *ngIf="notFound" class="not-found-msg">No prescription found for this Patient ID.</p>
+  </div>
+
+  <!-- Prescription Card -->
+  <div *ngIf="prescription" class="rx-card" [@contentFade]>
+
+    <!-- Patient Info + Paid Status -->
+    <div class="rx-header">
+      <div class="rx-patient-info">
+        <div class="rx-avatar">{{ prescription.patientName[0] }}</div>
+        <div>
+          <p class="rx-patient-name">{{ prescription.patientName }}</p>
+          <p class="rx-patient-id">{{ prescription.patientId }}</p>
+          <p class="rx-meta">{{ prescription.doctor }} &bull; {{ prescription.visitDate }}</p>
+        </div>
+      </div>
+      <div class="rx-status-block">
+        <div class="paid-badge" [ngClass]="statusClass(prescription.billStatus)">
+          <svg *ngIf="prescription.billStatus === 'paid'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+          <svg *ngIf="prescription.billStatus !== 'paid'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ prescription.billStatus | titlecase }}
+        </div>
+        <p *ngIf="prescription.paidAt" class="paid-at">Paid: {{ prescription.paidAt }}</p>
+        <p *ngIf="prescription.billStatus !== 'paid'" class="ws-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="12" height="12"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Waiting for cashier payment...
+        </p>
+      </div>
+    </div>
+
+    <!-- Prescription Items -->
+    <div class="rx-items-title">Prescribed Medications</div>
+    <div class="rx-items">
+      <div *ngFor="let item of prescription.items" class="rx-item">
+        <div class="rx-item-name">{{ item.name }}</div>
+        <div class="rx-item-details">
+          <span class="rx-tag">{{ item.strength }}</span>
+          <span class="rx-tag">{{ item.form }}</span>
+          <span class="rx-tag">Qty: {{ item.qty }}</span>
+          <span class="rx-tag">{{ item.days }}</span>
+        </div>
+        <div class="rx-item-dosage">{{ item.dosage }}</div>
+        <div *ngIf="item.notes" class="rx-item-notes">{{ item.notes }}</div>
+      </div>
+    </div>
+
+    <!-- Deliver Button -->
+    <div class="rx-actions">
+      <div *ngIf="prescription.delivered" class="delivered-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><polyline points="20 6 9 17 4 12"/></svg>
+        Delivered at {{ prescription.deliveredAt }}
+      </div>
+      <button *ngIf="!prescription.delivered" class="btn-deliver"
+              [disabled]="!canDeliver || delivering"
+              [class.disabled]="!canDeliver"
+              (click)="deliver()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="16" height="16"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        {{ delivering ? "Delivering..." : "Deliver Medication" }}
+      </button>
+      <p *ngIf="!canDeliver && !prescription.delivered" class="deliver-hint">
+        Payment must be confirmed before delivery.
+      </p>
+    </div>
+
+    <!-- Success Banner -->
+    <div *ngIf="deliveredSuccess" class="success-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="18" height="18"><polyline points="20 6 9 17 4 12"/></svg>
+      Medication delivered. Feedback email sent &amp; push notification triggered to patient.
+    </div>
+  </div>
+</div>

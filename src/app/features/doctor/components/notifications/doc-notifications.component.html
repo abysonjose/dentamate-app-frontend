@@ -1,0 +1,97 @@
+<div class="notif-page">
+
+  <!-- ── Page Header ── -->
+  <div class="page-header">
+    <div class="page-header-left">
+      <h2 class="page-title">Notifications</h2>
+      <span class="unread-badge" *ngIf="unreadCount">{{ unreadCount }} unread</span>
+    </div>
+    <div class="page-header-actions">
+      <button class="hdr-btn" (click)="markAllRead()" *ngIf="unreadCount" title="Mark all as read">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Mark all read
+      </button>
+      <button class="hdr-btn danger" (click)="dismissAll()" title="Clear read notifications">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        Clear read
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Filter Tabs ── -->
+  <div class="filter-bar">
+    <button *ngFor="let f of filters"
+            class="filter-tab"
+            [class.active]="activeFilter === f.id"
+            (click)="activeFilter = f.id">
+      {{ f.label }}
+      <span class="filter-count" *ngIf="f.id !== 'all'">
+        {{ countByType(f.id) }}
+      </span>
+    </button>
+  </div>
+
+  <!-- ── Notification List ── -->
+  <div class="notif-list" [@listAnim]="filtered.length">
+
+    <div *ngIf="!filtered.length" class="empty-state">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.25">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      <p>No notifications in this category</p>
+    </div>
+
+    <div *ngFor="let n of filtered"
+         class="notif-card"
+         [class.unread]="!n.read"
+         [class.priority-high]="n.priority === 'high' && !n.read"
+         [@slideIn]
+         (click)="markRead(n)">
+
+      <!-- Left: type icon -->
+      <div class="notif-icon" [style.background]="typeColor(n.type) + '1a'" [style.color]="typeColor(n.type)">
+        <span [innerHTML]="typeIcon(n.type)"></span>
+      </div>
+
+      <!-- Body -->
+      <div class="notif-body">
+        <div class="notif-top">
+          <div class="notif-title-row">
+            <span class="notif-title">{{ n.title }}</span>
+            <span class="priority-dot" [style.background]="priorityDot(n.priority)" *ngIf="!n.read" title="{{ n.priority }} priority"></span>
+          </div>
+          <span class="notif-time">{{ n.time }}</span>
+        </div>
+
+        <!-- Patient chip -->
+        <div class="patient-chip" *ngIf="n.patientName">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          {{ n.patientName }} · {{ n.patientId }}
+        </div>
+
+        <p class="notif-msg">{{ n.message }}</p>
+
+        <!-- Actions -->
+        <div class="notif-actions" *ngIf="n.actionLabel">
+          <button class="action-link" (click)="$event.stopPropagation(); markRead(n)">
+            {{ n.actionLabel }}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Dismiss -->
+      <button class="dismiss-btn" (click)="$event.stopPropagation(); dismiss(n.id)" title="Dismiss">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <!-- Unread indicator bar -->
+      <div class="unread-bar" *ngIf="!n.read" [style.background]="typeColor(n.type)"></div>
+
+    </div>
+  </div>
+
+</div>

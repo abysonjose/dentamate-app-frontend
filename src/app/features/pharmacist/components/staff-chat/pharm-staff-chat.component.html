@@ -1,0 +1,47 @@
+<div class="chat-layout">
+  <!-- Contact List -->
+  <div class="contact-list">
+    <div class="contact-list-header">Staff Chat</div>
+    <button *ngFor="let c of contacts" class="contact-item" [class.active]="activeContact?.id === c.id" (click)="selectContact(c)">
+      <div class="contact-avatar" [style.background]="roleColor(c.role)">{{ c.name[0] }}</div>
+      <div class="contact-info">
+        <p class="contact-name">{{ c.name }}</p>
+        <p class="contact-role">{{ c.role | titlecase }} &bull; {{ c.branch }}</p>
+        <p class="contact-last">{{ c.lastMessage }}</p>
+      </div>
+      <div class="contact-meta">
+        <span class="online-dot" [class.online]="c.online"></span>
+        <span *ngIf="c.unread > 0" class="unread-badge">{{ c.unread }}</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Chat Window -->
+  <div class="chat-window">
+    <div *ngIf="!activeContact" class="chat-empty">Select a contact to start chatting</div>
+    <ng-container *ngIf="activeContact">
+      <div class="chat-header">
+        <div class="contact-avatar sm" [style.background]="roleColor(activeContact.role)">{{ activeContact.name[0] }}</div>
+        <div>
+          <p class="chat-header-name">{{ activeContact.name }}</p>
+          <p class="chat-header-role">{{ activeContact.role | titlecase }} &bull; {{ activeContact.branch }}</p>
+        </div>
+        <span class="online-dot" [class.online]="activeContact.online" style="margin-left:auto"></span>
+      </div>
+      <div class="messages-area">
+        <div *ngFor="let msg of messages" class="msg-row" [class.from-me]="msg.fromMe">
+          <div class="msg-bubble" [class.bubble-me]="msg.fromMe" [class.bubble-them]="!msg.fromMe">
+            {{ msg.text }}
+            <span class="msg-time">{{ msg.time }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" [(ngModel)]="newMessage" placeholder="Type a message..." (keyup.enter)="send()" aria-label="Chat message" />
+        <button class="btn-send" (click)="send()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

@@ -1,0 +1,134 @@
+<div class="reg-wrap" [class.dark]="theme === 'dark'" [class.light]="theme === 'light'">
+
+  <!-- ── Success State ── -->
+  <div *ngIf="successPatient" class="success-card glass-card" [@fadeUp]>
+    <div class="success-icon">
+      <span [innerHTML]="getIcon('check')"></span>
+    </div>
+    <h2 class="success-title">Patient Registered</h2>
+    <p class="success-sub">A new patient record has been created successfully.</p>
+
+    <div class="success-details">
+      <div class="sd-row">
+        <span class="sd-label">Patient ID</span>
+        <div class="sd-id-row">
+          <span class="sd-value mono">{{ successPatient.id }}</span>
+          <button class="copy-btn" (click)="copyId()" [attr.aria-label]="copied ? 'Copied' : 'Copy ID'">
+            <span [innerHTML]="getIcon(copied ? 'check' : 'copy')"></span>
+            {{ copied ? 'Copied' : 'Copy' }}
+          </button>
+        </div>
+      </div>
+      <div class="sd-row">
+        <span class="sd-label">Name</span>
+        <span class="sd-value">{{ successPatient.name }}</span>
+      </div>
+      <div class="sd-row">
+        <span class="sd-label">Phone</span>
+        <span class="sd-value">{{ successPatient.phone }}</span>
+      </div>
+      <div class="sd-row">
+        <span class="sd-label">Registered On</span>
+        <span class="sd-value">{{ successPatient.registeredOn }}</span>
+      </div>
+    </div>
+
+    <button class="btn-primary mt-6" (click)="registerAnother()">
+      <span [innerHTML]="getIcon('plus')"></span>
+      Register Another Patient
+    </button>
+  </div>
+
+  <!-- ── Registration Form ── -->
+  <div *ngIf="!successPatient" [@fadeUp]>
+    <div class="reg-header">
+      <span class="reg-header-icon" [innerHTML]="getIcon('user')"></span>
+      <div>
+        <h2 class="reg-title">New Patient Registration</h2>
+        <p class="reg-sub">Fill in the patient's details to create a new record.</p>
+      </div>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="register()" class="reg-form glass-card" novalidate>
+
+      <!-- Personal Info -->
+      <fieldset class="form-section">
+        <legend class="section-legend">Personal Information</legend>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="firstName">First Name</label>
+            <input id="firstName" class="dm-input" formControlName="firstName"
+                   type="text" placeholder="e.g. Jordan" autocomplete="given-name" />
+            <p *ngIf="submitted && f['firstName'].errors?.['required']" class="field-error">First name is required</p>
+            <p *ngIf="submitted && f['firstName'].errors?.['minlength']" class="field-error">Minimum 2 characters</p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="lastName">Last Name</label>
+            <input id="lastName" class="dm-input" formControlName="lastName"
+                   type="text" placeholder="e.g. Davis" autocomplete="family-name" />
+            <p *ngIf="submitted && f['lastName'].errors?.['required']" class="field-error">Last name is required</p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="dob">Date of Birth</label>
+            <input id="dob" class="dm-input" formControlName="dob"
+                   type="date" />
+            <p *ngIf="submitted && f['dob'].errors?.['required']" class="field-error">Date of birth is required</p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="gender">Gender</label>
+            <select id="gender" class="dm-input" formControlName="gender">
+              <option value="" disabled>Select gender</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+              <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+            <p *ngIf="submitted && f['gender'].errors?.['required']" class="field-error">Gender is required</p>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Contact Info -->
+      <fieldset class="form-section">
+        <legend class="section-legend">Contact Details</legend>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" for="phone">Phone Number</label>
+            <input id="phone" class="dm-input" formControlName="phone"
+                   type="tel" placeholder="+1 512-000-0000" autocomplete="tel" />
+            <p *ngIf="submitted && f['phone'].errors?.['required']" class="field-error">Phone number is required</p>
+            <p *ngIf="submitted && f['phone'].errors?.['pattern']" class="field-error">Enter a valid phone number</p>
+          </div>
+          <div class="field-group">
+            <label class="field-label" for="email">Email Address</label>
+            <input id="email" class="dm-input" formControlName="email"
+                   type="email" placeholder="[email protected]" autocomplete="email" />
+            <p *ngIf="submitted && f['email'].errors?.['required']" class="field-error">Email is required</p>
+            <p *ngIf="submitted && f['email'].errors?.['email']" class="field-error">Enter a valid email</p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="address">Address</label>
+          <input id="address" class="dm-input" formControlName="address"
+                 type="text" placeholder="Street, City, State" autocomplete="street-address" />
+          <p *ngIf="submitted && f['address'].errors?.['required']" class="field-error">Address is required</p>
+        </div>
+      </fieldset>
+
+      <div class="form-footer">
+        <button type="submit" class="btn-primary">
+          <span [innerHTML]="getIcon('id')"></span>
+          Register Patient
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+</div>

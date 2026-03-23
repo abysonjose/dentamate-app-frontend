@@ -1,0 +1,21 @@
+<div class="c3d-wrap glass-card">
+  <div class="c3d-header">
+    <p class="c3d-title">Clinic Growth — 3D Branch Visualization</p>
+    <p class="c3d-sub">Hover over bars to see branch details</p>
+  </div>
+  <div class="canvas-wrap">
+    <canvas #canvas3d class="three-canvas" (mousemove)="onMouseMove($event)"></canvas>
+    <div *ngIf="hoveredBar" class="hover-tooltip">
+      <p class="tt-name">{{ hoveredBar.name }}</p>
+      <p class="tt-loc">{{ hoveredBar.location }}</p>
+      <p class="tt-rev">Revenue: ₹{{ hoveredBar.revenue.toLocaleString('en-IN') }}</p>
+      <p class="tt-pts">Patients: {{ hoveredBar.patients }}</p>
+    </div>
+  </div>
+  <div class="branch-legend">
+    <div *ngFor="let b of branches; let i = index" class="legend-item">
+      <span class="legend-dot" [class]="'c' + i"></span>
+      <span class="legend-name">{{ b.name }}</span>
+    </div>
+  </div>
+</div>

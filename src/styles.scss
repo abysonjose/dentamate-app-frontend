@@ -1,0 +1,125 @@
+/* Tailwind base */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* DentaMate Global Styles */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --teal:        #0d9488;
+  --teal-light:  #14b8a6;
+  --teal-dark:   #0f766e;
+  --blue:        #1e40af;
+  --blue-light:  #3b82f6;
+  --blue-mid:    #1d4ed8;
+  --white:       #ffffff;
+  --glass-bg:    rgba(255, 255, 255, 0.08);
+  --glass-border:rgba(255, 255, 255, 0.18);
+  --text-primary:#f0fdfa;
+  --text-muted:  rgba(240, 253, 250, 0.65);
+  --error:       #f87171;
+  --font:        'Inter', system-ui, sans-serif;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  font-family: var(--font);
+  background: #020c18;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+app-root {
+  display: block;
+  height: 100%;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--teal-dark); border-radius: 3px; }
+
+/* ── Theme tokens ─────────────────────────────────────────────────────────── */
+:root {
+  --sidebar-w:  260px;
+  --header-h:   64px;
+  /* Accent defaults — overridden by JS setProperty when user picks a color */
+  --accent:     #14b8a6;
+  --accent-dim: rgba(20,184,166,0.15);
+}
+
+/* Dark theme (default) */
+.dark {
+  --bg-base:     #070f1a;
+  --bg-surface:  #0d1b2e;
+  --bg-card:     rgba(255,255,255,0.05);
+  --border-card: rgba(255,255,255,0.09);
+  --text-1:      #f0fdfa;
+  --text-2:      rgba(240,253,250,0.6);
+  --text-3:      rgba(240,253,250,0.35);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.45);
+}
+
+/* Light theme */
+.light {
+  --bg-base:     #f0f4f8;
+  --bg-surface:  #ffffff;
+  --bg-card:     rgba(255,255,255,0.85);
+  --border-card: rgba(0,0,0,0.08);
+  --text-1:      #0f172a;
+  --text-2:      #475569;
+  --text-3:      #94a3b8;
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.08);
+}
+
+/* ── Shared glass card ────────────────────────────────────────────────────── */
+.glass-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: 16px;
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: var(--shadow-card);
+}
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; opacity: 0.5; }
+
+/* ── Skeleton shimmer ─────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.10) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 8px;
+}
+.light .skeleton {
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0.04) 25%,
+    rgba(0,0,0,0.09) 50%,
+    rgba(0,0,0,0.04) 75%
+  );
+  background-size: 800px 100%;
+}
+
+/* ── Page transition ──────────────────────────────────────────────────────── */
+.page-enter { animation: slideUp 0.38s cubic-bezier(0.35,0,0.25,1) both; }
+
+/* ── Star rating ──────────────────────────────────────────────────────────── */
+.star { cursor: pointer; transition: transform 0.15s; }
+.star:hover { transform: scale(1.25); }

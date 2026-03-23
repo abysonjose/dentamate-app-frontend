@@ -1,0 +1,412 @@
+<div class="sc-shell">
+
+  <!-- ══ ACTIVE MEETING OVERLAY ══ -->
+  <div class="meeting-overlay" *ngIf="activeMeeting" [@panelSlide]>
+    <div class="meeting-header">
+      <div class="meeting-title-row">
+        <span class="live-dot"></span>
+        <h3>{{ activeMeeting.title }}</h3>
+        <span class="meeting-host-tag">Host: {{ activeMeeting.hostName }}</span>
+      </div>
+      <div class="meeting-participants-row">
+        <span *ngFor="let pid of activeMeeting.participants" class="participant-chip">
+          {{ participantName(pid) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Video grid placeholder -->
+    <div class="video-grid">
+      <div class="video-tile self-tile">
+        <div class="video-placeholder" [class.cam-off]="camOff">
+          <svg *ngIf="camOff" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34"/>
+            <path d="M23 7l-7 5 7 5V7z"/><line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+          <span *ngIf="!camOff" class="video-initials">{{ currentUserName[0] }}</span>
+        </div>
+        <span class="video-name">{{ currentUserName }} (You)</span>
+        <span *ngIf="screenSharing" class="screen-share-badge">📺 Sharing Screen</span>
+      </div>
+      <div class="video-tile" *ngFor="let pid of activeMeeting.participants">
+        <div class="video-placeholder">
+          <span class="video-initials">{{ participantName(pid)[0] }}</span>
+        </div>
+        <span class="video-name">{{ participantName(pid) }}</span>
+      </div>
+    </div>
+
+    <!-- Screen share preview -->
+    <div class="screen-share-preview" *ngIf="screenSharing">
+      <div class="screen-share-mock">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+        </svg>
+        <span>Screen sharing active — your screen is visible to participants</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="meeting-controls">
+      <button class="ctrl-btn" [class.active]="!micMuted" [class.off]="micMuted" (click)="toggleMic()" [title]="micMuted ? 'Unmute' : 'Mute'">
+        <svg *ngIf="!micMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
+        </svg>
+        <svg *ngIf="micMuted" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <line x1="1" y1="1" x2="23" y2="23"/>
+          <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2M12 19v4M8 23h8"/>
+        </svg>
+        <span>{{ micMuted ? 'Unmute' : 'Mute' }}</span>
+      </button>
+
+      <button class="ctrl-btn" [class.active]="!camOff" [class.off]="camOff" (click)="toggleCam()" [title]="camOff ? 'Start Video' : 'Stop Video'">
+        <svg *ngIf="!camOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+        </svg>
+        <svg *ngIf="camOff" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34"/>
+          <path d="M23 7l-7 5 7 5V7z"/><line x1="1" y1="1" x2="23" y2="23"/>
+        </svg>
+        <span>{{ camOff ? 'Start Cam' : 'Stop Cam' }}</span>
+      </button>
+
+      <button class="ctrl-btn" [class.active]="screenSharing" (click)="toggleScreenShare()" title="Share Screen">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+          <polyline *ngIf="!screenSharing" points="8 10 12 6 16 10"/><line *ngIf="!screenSharing" x1="12" y1="6" x2="12" y2="14"/>
+          <line *ngIf="screenSharing" x1="8" y1="6" x2="16" y2="14"/><line *ngIf="screenSharing" x1="16" y1="6" x2="8" y2="14"/>
+        </svg>
+        <span>{{ screenSharing ? 'Stop Share' : 'Share Screen' }}</span>
+      </button>
+
+      <button class="ctrl-btn leave-btn" (click)="leaveMeeting()" title="Leave Meeting">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7 2 2 0 011.72 2v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.42 19.42 0 013.43 9.19 19.79 19.79 0 01.36 0.56 2 2 0 012.34 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.32 7.91"/>
+          <line x1="23" y1="1" x2="1" y2="23"/>
+        </svg>
+        <span>Leave</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══ MAIN CHAT LAYOUT ══ -->
+  <div class="sc-layout" [class.meeting-active]="!!activeMeeting">
+
+    <!-- ── Contact Sidebar ── -->
+    <div class="sc-sidebar">
+      <div class="sc-sidebar-header">
+        <h3>Staff Chat</h3>
+        <span class="unread-badge" *ngIf="totalUnread">{{ totalUnread }}</span>
+        <button class="meeting-schedule-btn" (click)="showMeetingPanel = !showMeetingPanel" title="Schedule Meeting">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            <line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Scheduled meetings list -->
+      <div class="meetings-list" *ngIf="meetings.length">
+        <div class="meetings-label">Meetings</div>
+        <div class="meeting-item" *ngFor="let m of meetings" [class.live]="m.status === 'live'">
+          <div class="meeting-item-info">
+            <span class="meeting-item-title">{{ m.title }}</span>
+            <span class="meeting-item-time">{{ formatMeetingTime(m.scheduledAt) }}</span>
+            <span class="meeting-status-badge" [class.live]="m.status === 'live'">
+              {{ m.status === 'live' ? '🔴 Live' : m.status === 'ended' ? 'Ended' : '📅 Scheduled' }}
+            </span>
+          </div>
+          <button class="join-btn" *ngIf="m.status !== 'ended'" (click)="joinMeeting(m)">
+            {{ m.status === 'live' ? 'Join' : 'Start' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Staff list -->
+      <div class="sc-contact-list">
+        <div class="sc-contact"
+             *ngFor="let s of staff"
+             [class.active]="activeContact?.id === s.id"
+             (click)="selectContact(s)">
+          <div class="sc-avatar" [style.background]="chatService.roleColor(s.role) + '22'" [style.border-color]="chatService.roleColor(s.role) + '66'">
+            <img *ngIf="s.avatarUrl" [src]="s.avatarUrl" [alt]="s.name" class="sc-avatar-img" />
+            <span *ngIf="!s.avatarUrl" [style.color]="chatService.roleColor(s.role)">{{ s.initials }}</span>
+            <span class="online-dot" *ngIf="s.online" [style.background]="'#4ade80'"></span>
+          </div>
+          <div class="sc-contact-info">
+            <div class="sc-contact-top">
+              <span class="sc-contact-name">{{ s.name }}</span>
+              <span class="sc-contact-time">{{ s.lastTime }}</span>
+            </div>
+            <div class="sc-contact-bottom">
+              <span class="sc-contact-role" [style.color]="chatService.roleColor(s.role)">{{ s.role }}</span>
+              <span class="sc-unread" *ngIf="s.unread">{{ s.unread }}</span>
+            </div>
+            <p class="sc-last-msg" *ngIf="s.lastMessage">{{ s.lastMessage }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Chat Area ── -->
+    <div class="sc-chat-area">
+
+      <!-- Meeting schedule panel -->
+      <div class="meeting-panel" *ngIf="showMeetingPanel" [@panelSlide]>
+        <div class="meeting-panel-header">
+          <h4>Schedule a Meeting</h4>
+          <button class="close-btn" (click)="showMeetingPanel = false">✕</button>
+        </div>
+        <div class="meeting-form">
+          <div class="mf-field">
+            <label>Meeting Title</label>
+            <input type="text" [(ngModel)]="meetingTitle" placeholder="e.g. Morning Briefing" />
+          </div>
+          <div class="mf-row">
+            <div class="mf-field">
+              <label>Date</label>
+              <input type="date" [(ngModel)]="meetingDate" />
+            </div>
+            <div class="mf-field">
+              <label>Time</label>
+              <input type="time" [(ngModel)]="meetingTime" />
+            </div>
+          </div>
+          <div class="mf-field">
+            <label>Invite Participants</label>
+            <div class="participant-grid">
+              <div class="participant-chip-select"
+                   *ngFor="let s of staff"
+                   [class.selected]="selectedParticipants.includes(s.id)"
+                   (click)="toggleParticipant(s.id)">
+                <div class="pcs-avatar" [style.background]="chatService.roleColor(s.role) + '33'" [style.color]="chatService.roleColor(s.role)">
+                  <img *ngIf="s.avatarUrl" [src]="s.avatarUrl" [alt]="s.name" class="sc-avatar-img" />
+                  <span *ngIf="!s.avatarUrl">{{ s.initials }}</span>
+                </div>
+                <div class="pcs-info">
+                  <span class="pcs-name">{{ s.name }}</span>
+                  <span class="pcs-role">{{ s.role }}</span>
+                </div>
+                <span class="pcs-check" *ngIf="selectedParticipants.includes(s.id)">✓</span>
+              </div>
+            </div>
+          </div>
+          <button class="schedule-btn" (click)="scheduleMeeting()"
+                  [disabled]="!meetingTitle || !meetingDate || !meetingTime">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            Schedule Meeting
+          </button>
+        </div>
+      </div>
+
+      <ng-container *ngIf="activeContact; else noContact">
+
+        <!-- Chat header -->
+        <div class="sc-chat-header">
+          <div class="sc-avatar sm" [style.background]="chatService.roleColor(activeContact.role) + '22'" [style.border-color]="chatService.roleColor(activeContact.role) + '66'">
+            <img *ngIf="activeContact.avatarUrl" [src]="activeContact.avatarUrl" [alt]="activeContact.name" class="sc-avatar-img" />
+            <span *ngIf="!activeContact.avatarUrl" [style.color]="chatService.roleColor(activeContact.role)">{{ activeContact.initials }}</span>
+            <span class="online-dot" *ngIf="activeContact.online"></span>
+          </div>
+          <div class="sc-chat-header-info">
+            <p class="sc-chat-name">{{ activeContact.name }}</p>
+            <p class="sc-chat-role" [style.color]="chatService.roleColor(activeContact.role)">
+              {{ activeContact.role }} ·
+              <span [style.color]="activeContact.online ? '#4ade80' : '#94a3b8'">
+                {{ activeContact.online ? 'Online' : 'Offline' }}
+              </span>
+            </p>
+          </div>
+          <button class="header-meet-btn" (click)="showMeetingPanel = !showMeetingPanel" title="Schedule Meeting">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+            </svg>
+            Meet
+          </button>
+          <button class="header-call-btn" (click)="startDirectCall()" *ngIf="!activeCall" title="Start Call">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.1 1.18 2 2 0 012.11 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.32 7.91a16 16 0 006.29 6.29l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+            Call
+          </button>
+        </div>
+
+        <!-- Active call controls bar -->
+        <div class="call-controls-bar" *ngIf="activeCall">
+          <div class="call-info">
+            <span class="call-live-dot"></span>
+            <span class="call-label">Call with {{ activeCall.name }}</span>
+          </div>
+          <div class="call-btns">
+            <button class="call-ctrl-btn" [class.off]="micMuted" (click)="toggleMic()" [title]="micMuted ? 'Unmute' : 'Mute'">
+              <svg *ngIf="!micMuted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2M12 19v4M8 23h8"/>
+              </svg>
+              <svg *ngIf="micMuted" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="1" y1="1" x2="23" y2="23"/>
+                <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2M12 19v4M8 23h8"/>
+              </svg>
+              <span>{{ micMuted ? 'Unmute' : 'Mute' }}</span>
+            </button>
+            <button class="call-ctrl-btn" [class.off]="camOff" (click)="toggleCam()" [title]="camOff ? 'Start Video' : 'Stop Video'">
+              <svg *ngIf="!camOff" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+              </svg>
+              <svg *ngIf="camOff" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 16v1a2 2 0 01-2 2H3a2 2 0 01-2-2V7a2 2 0 012-2h2m5.66 0H14a2 2 0 012 2v3.34"/>
+                <path d="M23 7l-7 5 7 5V7z"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <span>{{ camOff ? 'Start Cam' : 'Stop Cam' }}</span>
+            </button>
+            <button class="call-ctrl-btn" [class.active]="screenSharing" (click)="toggleScreenShare()" title="Share Screen">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+                <polyline *ngIf="!screenSharing" points="8 10 12 6 16 10"/><line *ngIf="!screenSharing" x1="12" y1="6" x2="12" y2="14"/>
+                <line *ngIf="screenSharing" x1="8" y1="6" x2="16" y2="14"/><line *ngIf="screenSharing" x1="16" y1="6" x2="8" y2="14"/>
+              </svg>
+              <span>{{ screenSharing ? 'Stop Share' : 'Share' }}</span>
+            </button>
+            <button class="call-ctrl-btn end-call-btn" (click)="endDirectCall()" title="End Call">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7 2 2 0 011.72 2v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.42 19.42 0 013.43 9.19 19.79 19.79 0 01.36.56 2 2 0 012.34 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.32 7.91"/>
+                <line x1="23" y1="1" x2="1" y2="23"/>
+              </svg>
+              <span>End Call</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="sc-msg-list" #msgList>
+          <div *ngFor="let msg of messages" class="sc-msg-row" [class.from-me]="msg.fromMe" [@msgIn]>
+
+            <!-- Avatar for received messages -->
+            <div class="sc-msg-avatar" *ngIf="!msg.fromMe">
+              <div class="sc-avatar xs" [style.background]="chatService.roleColor(activeContact.role) + '22'" [style.border-color]="chatService.roleColor(activeContact.role) + '55'">
+                <img *ngIf="activeContact.avatarUrl" [src]="activeContact.avatarUrl" [alt]="activeContact.name" class="sc-avatar-img" />
+                <span *ngIf="!activeContact.avatarUrl" [style.color]="chatService.roleColor(activeContact.role)">{{ activeContact.initials }}</span>
+              </div>
+            </div>
+
+            <!-- Meeting card -->
+            <div class="meeting-card" *ngIf="msg.meeting">
+              <div class="meeting-card-icon">📅</div>
+              <div class="meeting-card-body">
+                <p class="meeting-card-title">{{ msg.meeting.title }}</p>
+                <p class="meeting-card-time">{{ formatMeetingTime(msg.meeting.scheduledAt) }}</p>
+                <p class="meeting-card-host">Hosted by {{ msg.meeting.hostName }}</p>
+                <div class="meeting-card-participants">
+                  <span *ngFor="let pid of msg.meeting.participants" class="participant-chip sm">
+                    {{ participantName(pid) }}
+                  </span>
+                </div>
+                <button class="join-btn" *ngIf="msg.meeting.status !== 'ended'" (click)="joinMeeting(msg.meeting)">
+                  {{ msg.meeting.status === 'live' ? '🔴 Join Live' : 'Join Meeting' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Regular message bubble -->
+            <div class="sc-bubble" [class.mine]="msg.fromMe" *ngIf="!msg.meeting">
+              <!-- Attachment -->
+              <div class="sc-attachment" *ngIf="msg.attachment">
+                <img *ngIf="msg.attachment.type === 'image'" [src]="msg.attachment.url" [alt]="msg.attachment.name" class="attach-img" />
+                <video *ngIf="msg.attachment.type === 'video'" [src]="msg.attachment.url" controls class="attach-video"></video>
+                <div *ngIf="msg.attachment.type === 'document'" class="attach-doc">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <div>
+                    <span class="attach-doc-name">{{ msg.attachment.name }}</span>
+                    <span class="attach-doc-size">{{ msg.attachment.size }}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="sc-msg-text" *ngIf="msg.text">{{ msg.text }}</p>
+              <span class="sc-msg-time">{{ msg.time }}</span>
+            </div>
+
+          </div>
+
+          <div *ngIf="!messages.length" class="sc-no-msgs">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.3">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            <p>No messages yet. Say hello!</p>
+          </div>
+        </div>
+
+        <!-- Pending attachment preview -->
+        <div class="pending-attachment" *ngIf="pendingAttachment">
+          <img *ngIf="pendingAttachment.type === 'image'" [src]="pendingAttachment.url" class="pending-img" />
+          <div *ngIf="pendingAttachment.type !== 'image'" class="pending-file">
+            <span>{{ pendingAttachment.type === 'video' ? '🎬' : '📄' }} {{ pendingAttachment.name }}</span>
+          </div>
+          <button class="remove-pending" (click)="removePending()">✕</button>
+        </div>
+
+        <!-- Input row -->
+        <div class="sc-input-row">
+          <div class="attach-menu-wrap">
+            <button class="attach-btn" (click)="attachMenuOpen = !attachMenuOpen" title="Attach file" [class.open]="attachMenuOpen">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+              </svg>
+            </button>
+            <div class="attach-menu" *ngIf="attachMenuOpen" [@panelSlide]>
+              <button (click)="triggerFileInput('image')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                  <polyline points="21 15 16 10 5 21"/>
+                </svg>
+                Image
+              </button>
+              <button (click)="triggerFileInput('video')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                </svg>
+                Video
+              </button>
+              <button (click)="triggerFileInput('document')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                Document
+              </button>
+            </div>
+          </div>
+
+          <textarea class="sc-input" [(ngModel)]="newMessage" (keydown)="onKeydown($event)"
+                    placeholder="Type a message… (Enter to send)" rows="1"></textarea>
+
+          <button class="sc-send-btn" (click)="send()" [disabled]="!newMessage.trim() && !pendingAttachment" title="Send">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+
+      </ng-container>
+
+      <ng-template #noContact>
+        <div class="sc-no-contact">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.2">
+            <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+          </svg>
+          <p>Select a staff member to start chatting</p>
+        </div>
+      </ng-template>
+
+    </div>
+  </div>
+
+  <!-- Hidden file input -->
+  <input type="file" #fileInput class="sr-only" (change)="onFileSelected($event)" />
+
+</div>

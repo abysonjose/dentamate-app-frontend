@@ -1,0 +1,31 @@
+<div class="notif-wrap">
+
+  <div class="notif-header">
+    <h2 class="section-heading">Notification Center <span *ngIf="unreadCount" class="unread-badge">{{ unreadCount }}</span></h2>
+    <button class="btn-ghost-sm" (click)="markAllRead()">Mark all read</button>
+  </div>
+
+  <div class="filter-tabs">
+    <button *ngFor="let f of filters" class="filter-tab" [class.active]="activeFilter === f" (click)="setFilter(f)">
+      {{ filterLabels[f] }}
+    </button>
+  </div>
+
+  <div class="notif-list glass-card">
+    <div *ngFor="let n of filtered" class="notif-item" [class.unread]="!n.read" (click)="markRead(n)">
+      <div class="notif-icon">{{ getTypeIcon(n.type) }}</div>
+      <div class="notif-body">
+        <div class="notif-top">
+          <span class="notif-title">{{ n.title }}</span>
+          <span class="severity-dot" [style.background]="getSeverityColor(n.severity)"></span>
+          <span class="notif-time">{{ n.time }}</span>
+        </div>
+        <p class="notif-msg">{{ n.message }}</p>
+        <p class="notif-clinic">{{ n.clinicName }}</p>
+      </div>
+      <div *ngIf="!n.read" class="unread-dot"></div>
+    </div>
+    <p *ngIf="!filtered.length" class="empty-state">No notifications in this category.</p>
+  </div>
+
+</div>

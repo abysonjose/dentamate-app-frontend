@@ -1,0 +1,221 @@
+<div class="ai-page">
+
+  <div class="ai-layout">
+
+    <!-- ── Upload & Image ── -->
+    <div class="ai-left">
+      <div class="upload-card glass-card">
+        <div class="upload-header">
+          <div class="ai-badge">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            YOLOv8 AI Diagnosis
+          </div>
+          <p class="upload-desc">Upload an X-ray or intraoral image to detect caries, lesions, and bone loss using the YOLO v8 model.</p>
+        </div>
+
+        <!-- Upload zone -->
+        <div class="upload-zone" [class.has-image]="!!uploadedImage" [class.has-error]="!!validationError">
+          <input type="file" id="aiFile" accept="image/jpeg,image/jpg,image/png,image/bmp,image/tiff,image/webp" (change)="onFileChange($event)" class="sr-only" />
+          <label for="aiFile" class="upload-label" *ngIf="!uploadedImage && !validating">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <polyline points="21 15 16 10 5 21"/>
+            </svg>
+            <span>Click to upload dental X-ray or intraoral image</span>
+            <span class="upload-hint">PNG, JPG, BMP, TIFF, WebP · Max 20 MB</span>
+            <span class="upload-hint accepted-types">
+              ✓ Accepted: X-rays, OPG, CBCT, Periapical, Bitewing, Intraoral photos
+            </span>
+          </label>
+
+          <!-- Validating spinner -->
+          <div class="validating-state" *ngIf="validating">
+            <div class="val-spinner"></div>
+            <span>Validating image...</span>
+          </div>
+
+          <!-- Image preview with bounding boxes -->
+          <div class="image-preview" *ngIf="uploadedImage">
+            <img [src]="uploadedImage" alt="X-ray" class="xray-img" [class.xray-analyzing]="analyzing" />
+
+            <!-- ── Analyzing overlay on the X-ray ── -->
+            <div class="xray-scan-overlay" *ngIf="analyzing">
+              <!-- dark tint -->
+              <div class="xray-tint"></div>
+              <!-- horizontal scan beam -->
+              <div class="xray-beam"></div>
+              <!-- corner brackets -->
+              <span class="corner tl"></span>
+              <span class="corner tr"></span>
+              <span class="corner bl"></span>
+              <span class="corner br"></span>
+              <!-- centre HUD -->
+              <div class="xray-hud">
+                <div class="hud-ring">
+                  <div class="hud-ring-inner"></div>
+                  <svg class="hud-radar" viewBox="0 0 60 60">
+                    <circle cx="30" cy="30" r="26" fill="none" stroke="var(--accent)" stroke-width="1" stroke-dasharray="4 6" opacity="0.4"/>
+                    <line x1="30" y1="30" x2="30" y2="4" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="hud-dots">
+                  <span></span><span></span><span></span>
+                </div>
+                <p class="hud-label">Scanning...</p>
+              </div>
+              <!-- bottom status bar -->
+              <div class="xray-status-bar">
+                <span class="status-blink"></span>
+                <span class="status-text">YOLOv8 · Detecting caries, lesions &amp; bone loss</span>
+              </div>
+            </div>
+
+            <!-- Bounding boxes overlay -->
+            <div class="bbox-overlay" *ngIf="showBboxes && results.length">
+              <div *ngFor="let r of results"
+                   class="bbox"
+                   [style.left.%]="r.bbox[0]"
+                   [style.top.%]="r.bbox[1]"
+                   [style.width.%]="r.bbox[2]"
+                   [style.height.%]="r.bbox[3]"
+                   [style.border-color]="r.color">
+                <span class="bbox-label" [style.background]="r.color">
+                  {{ r.label }} {{ (r.confidence * 100).toFixed(0) }}%
+                </span>
+              </div>
+            </div>
+            <!-- Re-upload -->
+            <label for="aiFile" class="reupload-btn" *ngIf="!analyzing">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Change
+            </label>
+          </div>
+        </div>
+
+        <!-- Validation error -->
+        <div class="validation-error" *ngIf="validationError" [@fadeSlide]>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          {{ validationError }}
+        </div>
+
+        <div class="upload-actions">
+          <button class="btn-primary" (click)="analyze()" [disabled]="!uploadedImage || analyzing || validating">
+            <div class="btn-spinner" *ngIf="analyzing"></div>
+            <svg *ngIf="!analyzing" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+            {{ analyzing ? 'Analyzing...' : 'Run YOLOv8 Analysis' }}
+          </button>
+          <label class="toggle-bbox" *ngIf="results.length">
+            <input type="checkbox" [(ngModel)]="showBboxes" />
+            Show Detections
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Results ── -->
+    <div class="ai-right">
+
+      <!-- Analyzing state (right panel compact status) -->
+      <div class="analyzing-card glass-card" *ngIf="analyzing" [@fadeSlide]>
+        <div class="analyzing-anim">
+          <div class="scan-line"></div>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity="0.6">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+        <p class="analyzing-text">Running YOLOv8 inference...</p>
+        <p class="analyzing-sub">Detecting caries, lesions, and bone loss</p>
+      </div>
+
+      <!-- Detection Results -->
+      <div class="results-card glass-card" *ngIf="results.length && !analyzing" [@fadeSlide]>
+        <p class="results-title">Detection Results</p>
+        <div class="result-list">
+          <div class="result-item" *ngFor="let r of sortedResults">
+            <div class="result-dot" [style.background]="r.color"></div>
+            <div class="result-info">
+              <span class="result-label">{{ r.label }}</span>
+              <div class="result-bar-wrap">
+                <div class="result-bar" [style.width.%]="r.confidence * 100" [style.background]="r.color"></div>
+              </div>
+            </div>
+            <span class="result-conf" [style.color]="confidenceColor(r.confidence)">
+              {{ (r.confidence * 100).toFixed(0) }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Summary -->
+      <div class="summary-card glass-card" *ngIf="aiSummary && !analyzing" [@fadeSlide]>
+        <div class="summary-header">
+          <div class="ai-badge small">AI Summary</div>
+        </div>
+        <pre class="summary-text">{{ aiSummary }}</pre>
+      </div>
+
+      <!-- Expert System Advice -->
+      <div class="advice-card glass-card" *ngIf="advice && !analyzing" [@fadeSlide]>
+
+        <div class="advice-section">
+          <div class="advice-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Recommended Treatment
+          </div>
+          <ul class="advice-list">
+            <li *ngFor="let item of advice.treatment">{{ item }}</li>
+          </ul>
+        </div>
+
+        <div class="advice-section">
+          <div class="advice-section-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+            Common Medicines
+          </div>
+          <ul class="advice-list">
+            <li *ngFor="let item of advice.medicines">{{ item }}</li>
+          </ul>
+        </div>
+
+        <div class="advice-dos-donts">
+          <div class="advice-section dos">
+            <div class="advice-section-title green">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+              Do's
+            </div>
+            <ul class="advice-list">
+              <li *ngFor="let item of advice.dos">{{ item }}</li>
+            </ul>
+          </div>
+          <div class="advice-section donts">
+            <div class="advice-section-title red">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              Don'ts
+            </div>
+            <ul class="advice-list">
+              <li *ngFor="let item of advice.donts">{{ item }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="summary-actions">
+          <button class="btn-primary">Add to Patient Notes</button>
+          <button class="btn-outline">Export Report</button>
+        </div>
+
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-results glass-card" *ngIf="!results.length && !analyzing">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.25">
+          <circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+        </svg>
+        <p>Upload an image and run analysis to see AI detections</p>
+      </div>
+
+    </div>
+  </div>
+</div>

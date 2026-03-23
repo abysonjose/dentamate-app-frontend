@@ -1,0 +1,67 @@
+<div class="treatment-wrap">
+
+  <!-- Consultation fee -->
+  <div class="glass-card section-card">
+    <p class="section-title">Doctor Appointment Fee</p>
+    <div class="consult-row">
+      <span class="consult-label">Consultation Fee</span>
+      <div class="price-edit-row">
+        <span class="currency">₹</span>
+        <input type="number" [(ngModel)]="consultFee" min="0" class="price-input" />
+        <button class="btn-save" (click)="saveConsultFee()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Treatments -->
+  <div class="glass-card section-card">
+    <p class="section-title">Treatment Rates</p>
+    <div class="rate-list">
+      <div *ngFor="let t of treatments" class="rate-row">
+        <div class="rate-meta">
+          <span class="rate-name">{{ t.name }}</span>
+          <span class="rate-code">{{ t.code }}</span>
+          <span class="rate-cat">{{ t.category }}</span>
+        </div>
+        <div class="rate-price-wrap">
+          <ng-container *ngIf="editingId !== t.id">
+            <span class="rate-price">₹{{ t.price }}</span>
+            <button class="btn-edit" (click)="startEdit(t.id, t.price)">Edit</button>
+          </ng-container>
+          <ng-container *ngIf="editingId === t.id">
+            <span class="currency">₹</span>
+            <input type="number" [(ngModel)]="editPrice" min="0" class="price-input-sm" />
+            <button class="btn-save" (click)="saveTreatment(t.id)" [disabled]="saving">Save</button>
+            <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- X-rays -->
+  <div class="glass-card section-card">
+    <p class="section-title">X-Ray Rates</p>
+    <div class="rate-list">
+      <div *ngFor="let x of xrays" class="rate-row">
+        <div class="rate-meta">
+          <span class="rate-name">{{ x.name }}</span>
+          <span class="rate-code">{{ x.code }}</span>
+        </div>
+        <div class="rate-price-wrap">
+          <ng-container *ngIf="editingId !== x.id">
+            <span class="rate-price">₹{{ x.price }}</span>
+            <button class="btn-edit" (click)="startEdit(x.id, x.price)">Edit</button>
+          </ng-container>
+          <ng-container *ngIf="editingId === x.id">
+            <span class="currency">₹</span>
+            <input type="number" [(ngModel)]="editPrice" min="0" class="price-input-sm" />
+            <button class="btn-save" (click)="saveXray(x.id)" [disabled]="saving">Save</button>
+            <button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

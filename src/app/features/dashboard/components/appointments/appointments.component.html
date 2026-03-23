@@ -1,0 +1,214 @@
+<div class="glass-card appt-card">
+  <div class="card-header">
+    <h3>Next Appointment</h3>
+    <button class="btn-primary" (click)="openModal()">+ Book New</button>
+  </div>
+
+  <!-- Skeleton -->
+  <ng-container *ngIf="loading">
+    <div class="skeleton" style="height:20px;width:60%;margin-bottom:8px"></div>
+    <div class="skeleton" style="height:14px;width:40%;margin-bottom:16px"></div>
+    <div class="skeleton" style="height:60px;border-radius:12px"></div>
+  </ng-container>
+
+  <!-- Appointment card -->
+  <div class="appt-detail" *ngIf="!loading && appointment">
+    <div class="doctor-avatar">{{ appointment.avatar }}</div>
+    <div class="appt-info">
+      <p class="doctor-name">{{ appointment.doctor }}</p>
+      <p class="specialty">{{ appointment.specialty }}</p>
+      <div class="appt-meta">
+        <span class="meta-chip">📅 {{ appointment.date }}</span>
+        <span class="meta-chip">🕐 {{ appointment.time }}</span>
+        <span class="status-chip" [class.confirmed]="appointment.status === 'confirmed'">
+          {{ appointment.status | titlecase }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="appt-actions" *ngIf="!loading && appointment">
+    <button class="btn-outline">Reschedule</button>
+    <button class="btn-outline btn-danger">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Booking Modal ── -->
+<div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" [@modalAnim] (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Book appointment">
+
+    <div class="modal-header">
+      <div class="modal-title-wrap">
+        <h3>Book Appointment</h3>
+        <!-- Step indicator -->
+        <div class="step-indicator">
+          <span class="step-dot" [class.active]="bookingStep === 'details'" [class.done]="bookingStep === 'slots' || bookingStep === 'payment' || bookingStep === 'token'">1</span>
+          <span class="step-line" [class.done]="bookingStep === 'slots' || bookingStep === 'payment' || bookingStep === 'token'"></span>
+          <span class="step-dot" [class.active]="bookingStep === 'slots'" [class.done]="bookingStep === 'payment' || bookingStep === 'token'">2</span>
+          <span class="step-line" [class.done]="bookingStep === 'payment' || bookingStep === 'token'"></span>
+          <span class="step-dot" [class.active]="bookingStep === 'payment'" [class.done]="bookingStep === 'token'">3</span>
+          <span class="step-line" [class.done]="bookingStep === 'token'"></span>
+          <span class="step-dot" [class.active]="bookingStep === 'token'">4</span>
+        </div>
+      </div>
+      <button class="close-btn" (click)="closeModal()" aria-label="Close">✕</button>
+    </div>
+
+    <!-- ── STEP 1: Details ── -->
+    <div *ngIf="bookingStep === 'details'" [@stepAnim] class="step-panel">
+      <p class="step-label">Step 1 — Select department, doctor &amp; date</p>
+
+      <form [formGroup]="detailsForm" novalidate>
+        <div class="form-field">
+          <label for="dept">Department</label>
+          <select id="dept" formControlName="department">
+            <option value="">Select department</option>
+            <option *ngFor="let d of departments" [value]="d.id">{{ d.icon }} {{ d.name }}</option>
+          </select>
+          <span class="field-err" *ngIf="detailsForm.get('department')?.invalid && detailsForm.get('department')?.touched">Required</span>
+        </div>
+
+        <div class="form-field">
+          <label for="doc">Doctor</label>
+          <select id="doc" formControlName="doctor" [attr.disabled]="!doctors.length ? true : null">
+            <option value="">{{ doctors.length ? 'Select doctor' : 'Select department first' }}</option>
+            <option *ngFor="let d of doctors" [value]="d.id">{{ d.name }} — {{ d.specialty }}</option>
+          </select>
+          <span class="field-err" *ngIf="detailsForm.get('doctor')?.invalid && detailsForm.get('doctor')?.touched">Required</span>
+        </div>
+
+        <div class="form-field">
+          <label for="bdate">Date</label>
+          <input id="bdate" type="date" formControlName="date" [min]="today" />
+          <span class="field-err" *ngIf="detailsForm.get('date')?.invalid && detailsForm.get('date')?.touched">Required</span>
+        </div>
+
+        <div class="form-field">
+          <label for="notes">Notes (optional)</label>
+          <textarea id="notes" formControlName="notes" rows="2" placeholder="Describe your concern..."></textarea>
+        </div>
+
+        <button type="button" class="btn-primary w-full" (click)="proceedToSlots()" [disabled]="isLoadingSlots">
+          <span *ngIf="!isLoadingSlots">View Available Slots →</span>
+          <span *ngIf="isLoadingSlots" class="loading-dots">Loading slots<span>.</span><span>.</span><span>.</span></span>
+        </button>
+      </form>
+    </div>
+
+    <!-- ── STEP 2: Time Slots ── -->
+    <div *ngIf="bookingStep === 'slots'" [@stepAnim] class="step-panel">
+      <p class="step-label">Step 2 — Pick a time slot</p>
+
+      <!-- Summary bar -->
+      <div class="booking-summary">
+        <span class="summary-chip">{{ selectedDept?.icon }} {{ selectedDept?.name }}</span>
+        <span class="summary-chip">👨‍⚕️ {{ selectedDoctor?.name }}</span>
+        <span class="summary-chip">📅 {{ formattedDate }}</span>
+      </div>
+
+      <div class="slots-grid">
+        <button
+          *ngFor="let slot of timeSlots"
+          class="slot-btn"
+          [class.selected]="selectedSlot?.id === slot.id"
+          [class.full]="slot.available === 0"
+          [disabled]="slot.available === 0"
+          (click)="selectSlot(slot)"
+          [attr.aria-pressed]="selectedSlot?.id === slot.id"
+          [attr.aria-label]="slot.label + ', ' + slot.available + ' slots left'">
+          <span class="slot-time">{{ slot.label }}</span>
+          <div class="slot-fill-bar">
+            <div class="slot-fill-inner" [style.width.%]="slotFillPercent(slot)"></div>
+          </div>
+          <span class="slot-avail" [class.none]="slot.available === 0">
+            {{ slot.available === 0 ? 'Full' : slot.available + ' left' }}
+          </span>
+        </button>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn-ghost" (click)="backToDetails()">← Back</button>
+        <button class="btn-primary" (click)="confirmSlot()" [disabled]="!selectedSlot">
+          Confirm Slot
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Payment ── -->
+    <div *ngIf="bookingStep === 'payment'" [@stepAnim] class="step-panel">
+      <p class="step-label">Step 3 — Pay consultation fee</p>
+
+      <div class="booking-summary">
+        <span class="summary-chip">👨‍⚕️ {{ selectedDoctor?.name }}</span>
+        <span class="summary-chip">📅 {{ formattedDate }}</span>
+        <span class="summary-chip">🕐 {{ selectedSlot?.label }}</span>
+      </div>
+
+      <div class="fee-summary-box">
+        <span class="fee-summary-label">Consultation Fee</span>
+        <span class="fee-summary-amount">₹{{ consultationFee }}</span>
+      </div>
+
+      <p class="payment-method-label">Select payment method</p>
+      <div class="payment-methods">
+        <button class="pay-method-btn" [class.selected]="selectedPaymentMethod === 'card'" (click)="selectedPaymentMethod = 'card'">
+          💳 Card
+        </button>
+        <button class="pay-method-btn" [class.selected]="selectedPaymentMethod === 'upi'" (click)="selectedPaymentMethod = 'upi'">
+          📱 UPI
+        </button>
+        <button class="pay-method-btn" [class.selected]="selectedPaymentMethod === 'netbanking'" (click)="selectedPaymentMethod = 'netbanking'">
+          🏦 Net Banking
+        </button>
+      </div>
+
+      <div class="step-actions">
+        <button class="btn-ghost" (click)="backToSlots()">← Back</button>
+        <button class="btn-primary" (click)="processPayment()" [disabled]="isProcessingPayment">
+          <span *ngIf="!isProcessingPayment">Pay ₹{{ consultationFee }}</span>
+          <span *ngIf="isProcessingPayment" class="loading-dots">Processing<span>.</span><span>.</span><span>.</span></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Token ── -->
+    <div *ngIf="bookingStep === 'token'" [@stepAnim] class="step-panel token-panel">
+      <div class="token-icon">🎫</div>
+      <h4 class="token-heading">Booking Confirmed!</h4>
+      <p class="token-sub">Your queue token for this appointment</p>
+
+      <div class="token-card">
+        <span class="token-label">TOKEN</span>
+        <span class="token-number">{{ bookedToken }}</span>
+        <span class="token-slot-time">{{ selectedSlot?.label }}</span>
+      </div>
+
+      <div class="token-details">
+        <div class="token-row">
+          <span class="td-key">Department</span>
+          <span class="td-val">{{ selectedDept?.icon }} {{ selectedDept?.name }}</span>
+        </div>
+        <div class="token-row">
+          <span class="td-key">Doctor</span>
+          <span class="td-val">{{ selectedDoctor?.name }}</span>
+        </div>
+        <div class="token-row">
+          <span class="td-key">Date</span>
+          <span class="td-val">{{ formattedDate }}</span>
+        </div>
+        <div class="token-row">
+          <span class="td-key">Time Slot</span>
+          <span class="td-val">{{ selectedSlot?.label }}</span>
+        </div>
+        <div class="token-row">
+          <span class="td-key">Fee Paid</span>
+          <span class="td-val fee-paid-val">₹{{ consultationFee }} ✓</span>
+        </div>
+      </div>
+
+      <p class="token-hint">Present this token at the clinic reception or scan your RFID card to check in.</p>
+      <button class="btn-primary w-full" (click)="closeModal()">Done</button>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,150 @@
+﻿<div class="dm-shell" [class.dark]="theme === 'dark'" [class.light]="theme === 'light'">
+
+  <!-- Mobile overlay -->
+  <div *ngIf="mobileMenuOpen" class="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm lg:hidden" (click)="mobileMenuOpen = false"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="dm-sidebar" [class.open]="sidebarOpen || mobileMenuOpen" [@sidebarSlide]>
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+          <circle cx="20" cy="20" r="20" fill="url(#phmGrad)"/>
+          <rect x="12" y="10" width="16" height="20" rx="3" fill="white" opacity="0.9"/>
+          <rect x="15" y="14" width="10" height="2" rx="1" fill="url(#phmGrad)"/>
+          <rect x="15" y="18" width="10" height="2" rx="1" fill="url(#phmGrad)"/>
+          <rect x="15" y="22" width="6" height="2" rx="1" fill="url(#phmGrad)"/>
+          <defs>
+            <linearGradient id="phmGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#0d9488"/><stop offset="1" stop-color="#7c3aed"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div>
+        <span class="logo-text">DentaMate</span>
+        <span class="role-badge">Pharmacist</span>
+      </div>
+    </div>
+
+    <div class="patient-card">
+      <div class="patient-avatar">
+        <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" />
+        <span *ngIf="!avatarUrl">{{ initials }}</span>
+      </div>
+      <div class="patient-info">
+        <p class="patient-name">{{ pharmacistName }}</p>
+        <p class="patient-id">{{ pharmacistId }}</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Pharmacist navigation">
+      <button *ngFor="let item of navItems" class="nav-item" [class.active]="activeSection === item.id"
+              (click)="navigate(item.id)" [attr.aria-current]="activeSection === item.id ? 'page' : null">
+        <span class="nav-icon" [innerHTML]="getIcon(item.icon)"></span>
+        <span class="nav-label">{{ item.label }}</span>
+        <span *ngIf="item.badge" class="nav-badge">{{ item.badge }}</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="nav-item text-red-400" aria-label="Sign out">
+        <span class="nav-icon" [innerHTML]="getIcon('log-out')"></span>
+        <span class="nav-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="dm-main">
+    <header class="dm-header">
+      <button class="menu-btn lg:hidden" (click)="mobileMenuOpen = !mobileMenuOpen" aria-label="Toggle menu">
+        <span [innerHTML]="getIcon('menu')"></span>
+      </button>
+      <div class="header-title">
+        <h1>{{ getSectionTitle() }}</h1>
+        <p class="header-date">{{ today }}</p>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" (click)="themeService.toggle()" [attr.aria-label]="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'">
+          <span *ngIf="theme === 'dark'" [innerHTML]="getIcon('sun')"></span>
+          <span *ngIf="theme === 'light'" [innerHTML]="getIcon('moon')"></span>
+        </button>
+        <button class="icon-btn notif-btn" [class.has-badge]="notifBadge > 0" aria-label="Notifications" (click)="navigate('notifications')">
+          <span [innerHTML]="getIcon('bell')"></span>
+        </button>
+        <div class="header-avatar-wrap">
+          <button class="header-avatar" (click)="toggleProfileMenu()" aria-label="Profile menu" [attr.aria-expanded]="profileMenuOpen">
+            <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img" />
+            <span *ngIf="!avatarUrl">{{ initials }}</span>
+          </button>
+          <div *ngIf="profileMenuOpen" class="profile-dropdown" role="menu">
+            <div class="profile-dropdown-header">
+              <div class="pd-avatar"><img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="avatar-img"/><span *ngIf="!avatarUrl">{{ initials }}</span></div>
+              <div><p class="pd-name">{{ pharmacistName }}</p><p class="pd-id">{{ pharmacistId }}</p></div>
+            </div>
+            <div class="profile-dropdown-divider"></div>
+            <button class="pd-item" role="menuitem" (click)="navigate('profile')">
+              <span [innerHTML]="getIcon('user')"></span> My Profile
+            </button>
+            <button class="pd-item" role="menuitem" (click)="navigate('settings')">
+              <span [innerHTML]="getIcon('settings')"></span> Settings
+            </button>
+            <div class="profile-dropdown-divider"></div>
+            <button class="pd-item pd-signout" role="menuitem">
+              <span [innerHTML]="getIcon('log-out')"></span> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="dm-content" [@contentFade]="activeSection">
+      <ng-container [ngSwitch]="activeSection">
+        <app-pharm-delivery       *ngSwitchCase="'delivery'"></app-pharm-delivery>
+        <app-pharm-inventory      *ngSwitchCase="'inventory'"></app-pharm-inventory>
+        <app-pharm-shelf3d        *ngSwitchCase="'shelf3d'"></app-pharm-shelf3d>
+        <app-pharm-staff-chat     *ngSwitchCase="'chat'"></app-pharm-staff-chat>
+        <app-pharm-notifications  *ngSwitchCase="'notifications'"></app-pharm-notifications>
+        <app-pharm-settings       *ngSwitchCase="'settings'"></app-pharm-settings>
+
+        <!-- Profile -->
+        <div *ngSwitchCase="'profile'" class="profile-section">
+          <div class="profile-header">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar-lg">
+                <img *ngIf="avatarUrl" [src]="avatarUrl" alt="Avatar" class="profile-avatar-img" />
+                <span *ngIf="!avatarUrl">{{ initials }}</span>
+              </div>
+              <label class="avatar-upload-btn" aria-label="Upload photo">
+                <span [innerHTML]="getIcon('camera')"></span>
+                <input type="file" accept="image/*" (change)="onAvatarChange($event)" hidden />
+              </label>
+            </div>
+            <div>
+              <p class="profile-name">{{ pharmacistName }}</p>
+              <p class="profile-role">{{ pharmacistDept }}</p>
+            </div>
+          </div>
+          <div class="profile-fields">
+            <div class="pf-row"><span class="pf-label">Staff ID</span><span class="pf-value pf-id">{{ pharmacistId }}</span><span class="pf-lock" [innerHTML]="getIcon('lock')"></span></div>
+            <div class="pf-row"><span class="pf-label">Full Name</span><span class="pf-value">{{ pharmacistName }}</span></div>
+            <div class="pf-row"><span class="pf-label">Department</span><span class="pf-value">{{ pharmacistDept }}</span></div>
+            <ng-container *ngIf="!editingContact">
+              <div class="pf-row"><span class="pf-label">Phone</span><span class="pf-value">{{ pharmacistPhone }}</span></div>
+              <div class="pf-row"><span class="pf-label">Email</span><span class="pf-value">{{ pharmacistEmail }}</span></div>
+              <button class="btn-outline pf-edit-btn" (click)="startEditContact()"><span [innerHTML]="getIcon('edit')"></span> Edit Contact</button>
+            </ng-container>
+            <ng-container *ngIf="editingContact">
+              <div class="form-field"><label>Phone</label><input [(ngModel)]="editPhone" type="tel" /></div>
+              <div class="form-field"><label>Email</label><input [(ngModel)]="editEmail" type="email" /></div>
+              <div class="pf-actions">
+                <button class="btn-primary" (click)="saveContact()">Save</button>
+                <button class="btn-ghost" (click)="editingContact = false">Cancel</button>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </ng-container>
+    </main>
+  </div>
+</div>

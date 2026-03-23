@@ -1,0 +1,286 @@
+<div class="clinical-page">
+
+  <!-- ── Patient Header ── -->
+  <div class="patient-header glass-card" *ngIf="patient">
+    <div class="ph-avatar">{{ patient.name[0] }}</div>
+    <div class="ph-info">
+      <h2 class="ph-name">{{ patient.name }}</h2>
+      <div class="ph-meta">
+        <span>{{ patient.age }}y · {{ patient.gender === 'M' ? 'Male' : 'Female' }}</span>
+        <span>DOB: {{ patient.dob }}</span>
+        <span>Blood: <strong>{{ patient.bloodGroup }}</strong></span>
+        <span class="allergy-tag" *ngFor="let a of patient.allergies">⚠ {{ a }}</span>
+      </div>
+    </div>
+    <div class="ph-contact">
+      <span>{{ patient.phone }}</span>
+      <span>{{ patient.email }}</span>
+    </div>
+  </div>
+
+  <!-- ── Tabs ── -->
+  <div class="tab-bar">
+    <button class="tab-btn" [class.active]="activeTab === 'timeline'"    (click)="activeTab = 'timeline'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Medical History
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'prescription'" (click)="activeTab = 'prescription'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Prescription
+    </button>
+    <button class="tab-btn" [class.active]="activeTab === 'billing'"     (click)="activeTab = 'billing'">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Treatments & Bill
+    </button>
+  </div>
+
+  <!-- ══ TIMELINE ══ -->
+  <div *ngIf="activeTab === 'timeline'" [@tabSwitch]="'timeline'">
+    <div class="timeline" *ngIf="patient">
+      <div class="timeline-item" *ngFor="let visit of patient.visits">
+        <div class="tl-dot"></div>
+        <div class="tl-card glass-card">
+          <div class="tl-header">
+            <div>
+              <span class="tl-date">{{ visit.date }}</span>
+              <span class="tl-type">{{ visit.type }}</span>
+            </div>
+            <span class="tl-doctor">{{ visit.doctor }}</span>
+          </div>
+          <p class="tl-notes">{{ visit.notes }}</p>
+
+          <!-- Prescriptions -->
+          <div class="tl-section" *ngIf="visit.prescriptions.length">
+            <p class="tl-section-title">Prescriptions</p>
+            <div class="tl-rx-list">
+              <div class="tl-rx-item" *ngFor="let rx of visit.prescriptions">
+                <span class="rx-name">{{ rx.name }} {{ rx.strength }}</span>
+                <span class="rx-sig">
+                  {{ rx.morning ? 'M' : '-' }}-{{ rx.afternoon ? 'A' : '-' }}-{{ rx.night ? 'N' : '-' }}
+                  · {{ rx.days }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lab Results -->
+          <div class="tl-section" *ngIf="visit.labResults.length">
+            <p class="tl-section-title">Lab Results</p>
+            <div class="tl-lab-list">
+              <div class="tl-lab-item" *ngFor="let lab of visit.labResults">
+                <span class="lab-name">{{ lab.name }}</span>
+                <span class="lab-value" [class.flag-high]="lab.flag === 'high'" [class.flag-low]="lab.flag === 'low'">
+                  {{ lab.value ?? lab.status }}
+                </span>
+                <span class="lab-status" [class.ready]="lab.status === 'ready'">{{ lab.status }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Treatments & X-rays -->
+          <div class="tl-tags" *ngIf="visit.treatments.length || visit.xrays.length">
+            <span class="tl-tag treat" *ngFor="let t of visit.treatments">{{ t }}</span>
+            <span class="tl-tag xray"  *ngFor="let x of visit.xrays">🩻 {{ x }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PRESCRIPTION ══ -->
+  <div *ngIf="activeTab === 'prescription'" [@tabSwitch]="'prescription'">
+    <div class="rx-page glass-card">
+
+      <!-- Header -->
+      <div class="rx-header">
+        <div class="rx-clinic">
+          <div class="rx-logo">
+            <svg width="22" height="22" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="20" fill="url(#rxg)"/><path d="M13 14c0-3.866 3.134-7 7-7s7 3.134 7 7c0 2.5-1.3 4.7-3.25 6L20 28l-3.75-8C14.3 18.7 13 16.5 13 14z" fill="white" opacity="0.9"/><defs><linearGradient id="rxg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#0d9488"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient></defs></svg>
+          </div>
+          <div>
+            <p class="rx-clinic-name">DentaMate Clinic</p>
+            <p class="rx-clinic-sub">Dr. Khalid Hassan · DOC-00391 · General Dentistry</p>
+          </div>
+        </div>
+        <div class="rx-date">Date: {{ today }}</div>
+      </div>
+
+      <!-- Patient info -->
+      <div class="rx-patient-row" *ngIf="patient">
+        <span>Patient: <strong>{{ patient.name }}</strong></span>
+        <span>Age: {{ patient.age }}</span>
+        <span>ID: {{ patient.id }}</span>
+      </div>
+
+      <div class="rx-divider"></div>
+
+      <!-- Med search -->
+      <div class="rx-search-wrap">
+        <div class="med-search-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" [(ngModel)]="medSearch" (ngModelChange)="onMedSearch()"
+                 placeholder="Search medications from stock..." class="med-input" />
+          <button class="ocr-btn" (click)="openOcr()" title="Scan paper prescription">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M7 7h3v3H7zM14 7h3v3h-3zM7 14h3v3H7z"/></svg>
+            Scan Rx
+          </button>
+        </div>
+        <!-- Dropdown -->
+        <div class="med-dropdown" *ngIf="medDropdownOpen">
+          <div class="med-option" *ngFor="let m of filteredMeds"
+               [class.out-of-stock]="m.stock === 0"
+               (click)="selectMed(m)">
+            <div>
+              <span class="med-opt-name">{{ m.name }} {{ m.strength }}</span>
+              <span class="med-opt-form">{{ m.form }} · {{ m.category }}</span>
+            </div>
+            <span class="med-stock" [class.low]="m.stock > 0 && m.stock < 20" [class.out]="m.stock === 0">
+              {{ m.stock === 0 ? 'Out of Stock' : m.stock + ' units' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rx Items -->
+      <div class="rx-items" *ngIf="rxItems.length">
+        <div class="rx-item" *ngFor="let rx of rxItems">
+          <div class="rx-item-name">
+            <span class="rx-drug">{{ rx.name }} {{ rx.strength }}</span>
+            <span class="rx-form">{{ rx.form }}</span>
+          </div>
+          <div class="rx-sig-row">
+            <label class="sig-check"><input type="checkbox" [(ngModel)]="rx.morning"> M</label>
+            <label class="sig-check"><input type="checkbox" [(ngModel)]="rx.afternoon"> A</label>
+            <label class="sig-check"><input type="checkbox" [(ngModel)]="rx.night"> N</label>
+            <label class="sig-check"><input type="checkbox" [(ngModel)]="rx.beforeFood"> Before Food</label>
+            <input class="rx-days-input" type="text" [(ngModel)]="rx.days" placeholder="Days" />
+            <input class="rx-qty-input" type="number" [(ngModel)]="rx.qty" min="1" placeholder="Qty" />
+          </div>
+          <input class="rx-notes-input" type="text" [(ngModel)]="rx.notes" placeholder="Notes (optional)" />
+          <button class="rx-remove" (click)="removeRxItem(rx.id)">✕</button>
+        </div>
+      </div>
+
+      <div class="rx-empty" *ngIf="!rxItems.length">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <p>Search and add medications above</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="rx-footer">
+        <div class="rx-next-appt">
+          <label>Next Appointment:</label>
+          <input type="date" [(ngModel)]="nextApptDate" />
+        </div>
+        <div class="rx-footer-sig">
+          <p class="rx-sig-line">Dr. Khalid Hassan</p>
+          <p class="rx-sig-sub">DOC-00391 · General Dentistry</p>
+        </div>
+      </div>
+
+      <div class="rx-actions">
+        <button class="btn-primary" (click)="saveRx()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Save Prescription
+        </button>
+        <div class="rx-saved-msg" *ngIf="rxSaved" [@fadeSlide]>✓ Prescription saved</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ BILLING ══ -->
+  <div *ngIf="activeTab === 'billing'" [@tabSwitch]="'billing'">
+    <div class="billing-grid">
+
+      <!-- Treatments -->
+      <div class="bill-panel glass-card">
+        <h3 class="bill-panel-title">Treatments</h3>
+        <input type="text" [(ngModel)]="treatSearch" placeholder="Search treatments..." class="bill-search" />
+        <div class="bill-list">
+          <div class="bill-option" *ngFor="let t of filteredTreatments" (click)="addTreatment(t)">
+            <div>
+              <span class="bill-opt-name">{{ t.name }}</span>
+              <span class="bill-opt-cat">{{ t.category }}</span>
+            </div>
+            <span class="bill-opt-price">₹{{ t.price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- X-rays -->
+      <div class="bill-panel glass-card">
+        <h3 class="bill-panel-title">X-Rays & Imaging</h3>
+        <input type="text" [(ngModel)]="xraySearch" placeholder="Search imaging..." class="bill-search" />
+        <div class="bill-list">
+          <div class="bill-option" *ngFor="let x of filteredXrays" (click)="addXray(x)">
+            <div>
+              <span class="bill-opt-name">{{ x.name }}</span>
+              <span class="bill-opt-cat">{{ x.code }}</span>
+            </div>
+            <span class="bill-opt-price">₹{{ x.price }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bill Summary -->
+      <div class="bill-summary glass-card">
+        <h3 class="bill-panel-title">Bill Summary</h3>
+        <div class="bill-empty" *ngIf="!billItems.length">
+          <p>Add treatments or imaging to generate bill</p>
+        </div>
+        <div class="bill-items" *ngIf="billItems.length">
+          <div class="bill-row" *ngFor="let b of billItems">
+            <span class="bill-row-name">{{ b.name }}</span>
+            <div class="bill-row-right">
+              <input type="number" [(ngModel)]="b.qty" min="1" class="bill-qty" />
+              <span class="bill-row-price">₹{{ b.qty * b.price }}</span>
+              <button class="bill-remove" (click)="removeBillItem(b.id)">✕</button>
+            </div>
+          </div>
+          <div class="bill-total-row">
+            <span>Total</span>
+            <span class="bill-total">₹{{ billTotal }}</span>
+          </div>
+          <button class="btn-primary w-full mt-3">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            Send to Billing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── OCR Modal ── -->
+  <div class="modal-overlay" *ngIf="ocrModalOpen" (click)="closeOcr()">
+    <div class="modal-box" (click)="$event.stopPropagation()" [@fadeSlide]>
+      <div class="modal-header">
+        <h3>Scan Paper Prescription</h3>
+        <button class="modal-close" (click)="closeOcr()">✕</button>
+      </div>
+      <p class="modal-desc">Upload an image of a handwritten or printed prescription. Groq OCR will extract the data.</p>
+      <div class="ocr-upload" [class.has-file]="!!ocrFile">
+        <input type="file" id="ocrFile" accept="image/*" (change)="onOcrFile($event)" class="sr-only" />
+        <label for="ocrFile" class="ocr-upload-label">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span>{{ ocrFile ? ocrFile.name : 'Click to upload image' }}</span>
+        </label>
+      </div>
+      <div class="ocr-result" *ngIf="ocrResult">
+        <p class="ocr-result-title">Extracted Data:</p>
+        <pre class="ocr-pre">{{ ocrResult }}</pre>
+      </div>
+      <div class="ocr-loading" *ngIf="ocrLoading">
+        <div class="ocr-spinner"></div>
+        <span>Processing with Groq OCR...</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" (click)="runOcr()" [disabled]="!ocrFile || ocrLoading">
+          {{ ocrLoading ? 'Processing...' : 'Run OCR' }}
+        </button>
+        <button class="btn-ghost" (click)="closeOcr()">Close</button>
+      </div>
+    </div>
+  </div>
+
+</div>

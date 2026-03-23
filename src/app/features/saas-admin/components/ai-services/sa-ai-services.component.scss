@@ -1,0 +1,42 @@
+.ai-wrap { display: flex; flex-direction: column; gap: 1.5rem; }
+
+.ai-header-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+.kpi-card { padding: 1.25rem; }
+.kpi-label { font-size: 0.75rem; color: var(--text-3); font-weight: 500; margin-bottom: 0.35rem; }
+.kpi-value { font-size: 1.8rem; font-weight: 800; color: var(--text-1);
+  &.purple { color: #a855f7; }
+  &.blue   { color: #3b82f6; }
+}
+.kpi-sub { font-size: 0.72rem; color: var(--text-3); margin-top: 4px; }
+
+.chart-card { padding: 1.25rem; }
+.chart-header { margin-bottom: 1rem; }
+.chart-title { font-size: 0.88rem; font-weight: 600; color: var(--text-1); }
+.period-canvas { width: 100%; height: 200px; display: block; }
+
+.clinic-usage-list { overflow: hidden; }
+.list-header {
+  display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 1rem; padding: 0.65rem 1.25rem;
+  font-size: 0.7rem; font-weight: 600; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-card);
+}
+.usage-row {
+  display: grid; grid-template-columns: 2fr 1fr 1.5fr; gap: 1rem; padding: 0.85rem 1.25rem;
+  align-items: center; border-bottom: 1px solid var(--border-card);
+  &:last-child { border-bottom: none; }
+  &:hover { background: rgba(168,85,247,0.04); }
+}
+.usage-clinic { display: flex; align-items: center; gap: 0.65rem; }
+.usage-avatar { width: 32px; height: 32px; border-radius: 9px; background: rgba(168,85,247,0.15); color: #a855f7; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+.usage-name { font-size: 0.85rem; font-weight: 600; color: var(--text-1); }
+.usage-id   { font-size: 0.68rem; color: var(--text-3); font-family: 'Courier New', monospace; }
+.usage-credits { display: flex; align-items: center; gap: 0.25rem; font-size: 0.85rem; }
+.credits-used  { font-weight: 700; }
+.credits-sep   { color: var(--text-3); }
+.credits-limit { color: var(--text-3); }
+.usage-bar-wrap { display: flex; align-items: center; gap: 0.5rem; }
+.usage-bar-track { flex: 1; height: 6px; background: var(--border-card); border-radius: 99px; overflow: hidden; }
+.usage-bar-fill  { height: 100%; border-radius: 99px; transition: width 0.5s; }
+.usage-pct { font-size: 0.75rem; font-weight: 700; width: 36px; text-align: right; flex-shrink: 0; }
